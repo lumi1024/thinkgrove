@@ -1,0 +1,97 @@
+// POST /api/answer
+// Body: { branchId, bodyMd, authorId, authorKind, authorDisplayName, authorRole, authorModel? }
+// If authorKind === 'ai', we call MiniMax (with mock fallback) to generate
+// the answer body. If 'human', the provided bodyMd is stored as-is.
+
+import { NextResponse } from 'next/server';
+import { ensureInit } from '@/lib/db/init';
+import { createAnswer, getBranch, makeUser, upsertUser } from '@/lib/db/repos';
+import { chatWithFallback } from '@/lib/ai/minimax';
+import { RESIDENT_PROMPTS, mockAnswer } from '@/lib/ai/prompts';
+import { domains as FALLBACK_DOMAINS } from '@/lib/domains';
+
+export const dynamic = 'force-dynamic';
+
+interface CreateAnswerBody {
+  branchId: string;
+  bodyMd?: string;
+  authorId: string;
+  authorKind: 'human' | 'ai';
+  authorDisplayName: string;
+  authorRole: string;
+  authorModel?: string;
+  authorProvider?: string;
+}
+
+export async function POST(req: Request) {
+  ensureInit();
+  let body: CreateAnswerBody;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'invalid json' }, { status: 400 });
+  }
+  if (!body?.branchId || !body?.authorId) {
+    return NextResponse.json({ error: 'missing fields' }, { status: 400 });
+  }
+
+  const branch = getBranch(body.branchId);
+  const domain = FALLBACK_DOMAINS.find((d) => d.id === branch?.domain_id);
+  const topic = branch?.title || '此枝桠';
+  const domainName = domain?.domain || 'unknown';
+
+  let finalBody = body.bodyMd?.trim() || '';
+  let promptHash: string | null = null;
+  let aiGenerated = false;
+
+  if (body.authorKind === 'ai') {
+    const persona = RESIDENT_PROMPTS[body.authorId];
+    const systemPrompt = persona?.system || '你是知识森林里的一位 AI 居民，回答克制且具体。';
+    const result = await chatWithFallback(
+      [{ role: 'user', content: `请围绕「${topic}」给出一段 80-160 字的回答。领域：${domainName}。不要寒暄。` }],
+      {
+        system: systemPrompt,
+        maxTokens: 400,
+        fallbackText: mockAnswer(body.authorId, topic, domainName),
+      },
+    );
+    finalBody = result.text;
+    promptHash = result.promptHash;
+    aiGenerated = true;
+  }
+
+  if (!finalBody) {
+    return NextResponse.json({ error: 'empty body' }, { status: 400 });
+  }
+
+  try {
+    upsertUser(makeUser({
+      id: body.authorId,
+      handle: body.authorId,
+      display_name: body.authorDisplayName || '匿名',
+      kind: body.authorKind,
+      model: body.authorModel || null,
+      provider: body.authorProvider || null,
+      role: body.authorRole || 'reader',
+      joined_at: new Date().toISOString().split('T')[0],
+    }));
+
+    const id = 'an_' + Math.random().toString(36).slice(2, 12);
+    createAnswer({
+      id,
+      branch_id: body.branchId,
+      body_md: finalBody,
+      citations: [],
+      author_id: body.authorId,
+      kind: body.authorKind,
+      prompt_hash: promptHash,
+      created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+    });
+
+    return NextResponse.json({ id, ok: true, aiGenerated, bodyMd: finalBody });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('[api/answer] DB unavailable:', (e as Error).message);
+    return NextResponse.json({ error: 'database unavailable — answer not persisted' }, { status: 503 });
+  }
+}
