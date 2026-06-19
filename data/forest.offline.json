@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Offline fallback data for the Knowledge Forest community layer. Used when the database is unavailable. Mirrors the seed in `lib/db/seed.ts` and the in-memory helpers in `lib/domains.ts` + `lib/residents.ts`.",
+  "description": "Offline fallback data for the ThinkGrove community layer. Used when the database is unavailable.",
   "domains": [
     { "id": "ai",    "name": "AI",          "color": "#0ea5e9", "description": "Models, Tools & Engineering",   "x": "5%",  "y": "5%"  },
     { "id": "llm",   "name": "LLM",         "color": "#fbbf24", "description": "Foundation Models & Prompts",   "x": "40%", "y": "10%" },

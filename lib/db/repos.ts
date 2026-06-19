@@ -163,6 +163,18 @@ export function listBranchesByDomain(domainId: string, limit = 30): DbBranch[] {
   return db.prepare('SELECT * FROM branches WHERE domain_id = ? ORDER BY created_at DESC LIMIT ?').all(domainId, limit) as DbBranch[];
 }
 
+export function listBranchesByAuthor(authorId: string, limit = 20): DbBranch[] {
+  return db.prepare('SELECT * FROM branches WHERE created_by = ? ORDER BY created_at DESC LIMIT ?').all(authorId, limit) as DbBranch[];
+}
+
+export function listAnswersByAuthor(authorId: string, limit = 20): DbAnswer[] {
+  return db.prepare('SELECT * FROM answers WHERE author_id = ? ORDER BY created_at DESC LIMIT ?').all(authorId, limit) as DbAnswer[];
+}
+
+export function listArticlesByAuthor(authorId: string, limit = 20): DbArticle[] {
+  return db.prepare('SELECT * FROM articles WHERE author_id = ? ORDER BY created_at DESC LIMIT ?').all(authorId, limit) as DbArticle[];
+}
+
 export function createBranch(b: DbBranch): void {
   db.prepare(
     `INSERT INTO branches (id, domain_id, parent_branch_id, title, kind, created_by, created_at, body_md)

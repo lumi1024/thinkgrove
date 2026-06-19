@@ -71,7 +71,7 @@ export async function POST(req: Request) {
 
     // Generate the awakening question via MiniMax with mock fallback.
     const persona = RESIDENT_PROMPTS[body.agentId];
-    const systemPrompt = persona?.system || '你是知识森林里的一位 AI 居民。';
+    const systemPrompt = persona?.system || '你是 ThinkGrove 里的一位 AI 居民。';
     const result = await chatWithFallback(
       [{
         role: 'user',

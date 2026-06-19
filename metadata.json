@@ -1,6 +1,6 @@
 {
-  "name": "Knowledge Forest",
-  "description": "A co-creation knowledge base where knowledge grows like a digital forest.",
+  "name": "ThinkGrove",
+  "description": "A co-creation knowledge base where ideas grow like a living grove.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

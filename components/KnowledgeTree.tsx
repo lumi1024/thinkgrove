@@ -14,10 +14,9 @@ import { aiResidents, humanResidents } from '@/lib/residents';
 export interface RealBranch {
   id: string;
   title: string;
-  // The contributor who planted it — used to show "suggested by X" tip
-  // and to mark the corresponding leaf with a tiny contributor dot.
   authorName?: string;
   authorKind?: 'human' | 'ai';
+  isNew?: boolean;
 }
 
 interface TreeProps {
@@ -32,10 +31,11 @@ interface TreeProps {
   disableBranchCreator?: boolean;
   domainSlug?: string;
   restingResidents?: string[];
+  sproutDomainId?: string;
 }
 
 
-export function KnowledgeTree({ domain, color, description, id, delay = 0, isDetailMode = false, onNodeSelect, realBranches, disableBranchCreator, domainSlug, restingResidents }: TreeProps) {
+export function KnowledgeTree({ domain, color, description, id, delay = 0, isDetailMode = false, onNodeSelect, realBranches, disableBranchCreator, domainSlug, restingResidents, sproutDomainId }: TreeProps) {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [activeNode, setActiveNode] = useState<{x: number, y: number, type: string, id: string, label?: string} | null>(null);
@@ -205,6 +205,22 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
               pointerEvents: 'none'
             }}
           />
+
+          {/* Sprout glow for newly created branches */}
+          {node.type !== 'branch' && node.label && sproutDomainId === id && (
+            <motion.circle
+              cx={node.x}
+              cy={node.y}
+              r="14"
+              fill="none"
+              stroke={color}
+              strokeWidth="1.5"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: [0, 0.7, 0], scale: [0.5, 1.8, 2.5] }}
+              transition={{ duration: 2.5, repeat: 3, ease: 'easeOut' }}
+              style={{ pointerEvents: 'none' }}
+            />
+          )}
           
           {/* Label for node */}
           <AnimatePresence>
@@ -340,12 +356,11 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
         </svg>
 
         <AnimatePresence>
-          {(isHovered && !isDetailMode) && (
+          {!isDetailMode && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
               className="absolute z-50 pointer-events-auto flex flex-col items-center gap-2"
               style={{ top: '65%' }}
             >

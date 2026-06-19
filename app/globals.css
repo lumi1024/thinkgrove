@@ -14,3 +14,65 @@
 body {
   transition: background-color 10s ease, color 10s ease;
 }
+
+/* Active/pressed feedback for all interactive elements */
+button:active:not(:disabled),
+a:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+button:active:not(:disabled):hover,
+a:active:not(:disabled):hover {
+  transform: scale(0.97);
+}
+
+/* Focus-visible for keyboard navigation */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.4);
+  border-color: rgba(14, 165, 233, 0.6);
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.4);
+}
+
+[data-theme="night"] {
+  --glass-bg: rgba(30, 35, 50, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --card-text: #e2e8f0;
+  --card-text-secondary: #94a3b8;
+}
+
+[data-theme="night"] .glass-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--card-text);
+}
+
+[data-theme="night"] .glass-card .text-slate-800 {
+  color: var(--card-text) !important;
+}
+
+[data-theme="night"] .glass-card .text-slate-700 {
+  color: var(--card-text) !important;
+}
+
+[data-theme="night"] .glass-card .text-slate-600 {
+  color: var(--card-text-secondary) !important;
+}
+
+[data-theme="night"] .glass-card .text-slate-500 {
+  color: var(--card-text-secondary) !important;
+}
+
+[data-theme="night"] .glass-card .border-slate-200\/60 {
+  border-color: var(--glass-border) !important;
+}

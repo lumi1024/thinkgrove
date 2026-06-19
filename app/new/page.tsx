@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
+import React, { useState, useMemo, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
@@ -13,7 +13,11 @@ import { IdentityChip } from '@/components/IdentityChip';
 import { RoleBadge } from '@/components/RoleBadge';
 import { BackgroundGrid } from '@/components/ui/BackgroundGrid';
 import { BackLink } from '@/components/ui/BackLink';
+import { GrowthSignIn } from '@/components/GrowthSignIn';
 import { useTimeTheme } from '@/hooks/useTimeTheme';
+import { useToast } from '@/components/ui/Toast';
+import { useGuideSteps } from '@/hooks/useGuideSteps';
+import { GuideTooltip } from '@/components/GuideTooltip';
 
 type Step = 'kind' | 'flesh' | 'sign';
 
@@ -39,6 +43,7 @@ function NewContent() {
   const [citation, setCitation] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ id: string } | null>(null);
+  const [showSignIn, setShowSignIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const domain = useMemo(() => domains.find((d) => d.id === seedDomain) || domains[0], [seedDomain]);
@@ -51,6 +56,19 @@ function NewContent() {
 
   const canFlesh = title.trim().length >= 4;
   const canSign  = bodyMd.trim().length >= 20 && citation.trim().length >= 4;
+
+  const { markSeen, hasSeen } = useGuideSteps();
+  const branchGuideRef = useRef<HTMLDivElement>(null);
+  const [showBranchGuide, setShowBranchGuide] = useState(false);
+
+  useEffect(() => {
+    setShowBranchGuide(!hasSeen(4));
+  }, [hasSeen]);
+
+  const dismissBranchGuide = () => {
+    markSeen(4);
+    setShowBranchGuide(false);
+  };
 
   const submit = async () => {
     setSubmitting(true);
@@ -77,6 +95,7 @@ function NewContent() {
         throw new Error(j?.error || '提交失败');
       }
       const j = await r.json();
+      setShowSignIn(true);
       setDone({ id: j.id });
     } catch (e) {
       setError((e as Error).message);
@@ -89,13 +108,13 @@ function NewContent() {
     return (
       <main className="min-h-screen w-full flex items-center justify-center p-6" style={{ backgroundColor: 'var(--theme-bg)' }}>
         <BackgroundGrid color="var(--theme-grid)" />
-      <motion.div
-        initial={{ opacity: 0, y: 20, filter: 'blur(6px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 0.7 }}
-        className="relative max-w-md w-full rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur-xl p-8 text-center shadow-[0_8px_40px_rgba(15,23,42,0.06)]"
-      >
-          <div className="font-mono text-[10px] tracking-[0.3em] text-[#10b981] uppercase mb-4">branched</div>
+        <motion.div
+          initial={{ opacity: 0, y: 20, filter: 'blur(6px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 0.7 }}
+          className="relative max-w-md w-full rounded-2xl border border-slate-200/60 bg-white/70 backdrop:blur-xl p-8 text-center shadow-[0_8px_40px_rgba(15,23,42,0.06)]"
+        >
+          <div className="font-mono text-[10px] tracking-[0.3em] text-[#10b981] uppercase mb-4">已发芽</div>
           <Sparkles size={28} className="mx-auto text-[#10b981] mb-4" />
           <h2 className="text-2xl font-light text-slate-800 mb-2">新枝桠已挂上</h2>
           <p className="text-sm text-slate-500 font-light leading-relaxed mb-6">
@@ -110,13 +129,14 @@ function NewContent() {
               <ArrowRight size={14} />
             </Link>
             <button
-              onClick={() => { setDone(null); setTitle(''); setBodyMd(''); setCitation(''); setStep('kind'); }}
+              onClick={() => { setDone(null); setShowSignIn(false); setTitle(''); setBodyMd(''); setCitation(''); setStep('kind'); }}
               className="text-[11px] font-mono text-slate-400 hover:text-slate-700 tracking-widest uppercase cursor-pointer"
             >
               再发一枝
             </button>
           </div>
         </motion.div>
+        {showSignIn && <GrowthSignIn userName={me?.displayName || '匿名'} onDone={() => setShowSignIn(false)} />}
       </main>
     );
   }
@@ -130,16 +150,21 @@ function NewContent() {
       />
 
       <div className="relative z-10 max-w-2xl mx-auto px-6 md:px-10 py-12">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-[11px] font-mono text-slate-400 hover:text-slate-700 tracking-widest uppercase cursor-pointer mb-6"
-        >
-          <ArrowLeft size={12} />
-          <span>back</span>
-        </button>
+        <div ref={branchGuideRef}>
+          <BackLink />
+        </div>
+
+        {showBranchGuide && (
+          <GuideTooltip
+            step={4}
+            onDismiss={dismissBranchGuide}
+            identity={me ? { kind: me.kind, displayName: me.displayName, handle: me.handle } : null}
+            anchorRef={branchGuideRef}
+          />
+        )}
 
         <div className="font-mono text-[10px] tracking-[0.3em] text-slate-400 uppercase mb-2">
-          grow_a_branch / step_{step === 'kind' ? '01' : step === 'flesh' ? '02' : '03'}_of_03
+          发枝 / step_{step === 'kind' ? '01' : step === 'flesh' ? '02' : '03'}_of_03
         </div>
         <h1 className="text-3xl font-light text-slate-800 tracking-wide leading-tight mb-1">
           让 {domain.domain} 这棵树
@@ -185,8 +210,11 @@ function NewContent() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="一句话写清你要问的"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200/60 bg-white/70 text-slate-800 text-base font-light focus:outline-none focus:border-slate-400 transition-colors mb-6"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200/60 bg-white/70 text-slate-800 text-base font-light focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-300 transition-colors mb-1"
               />
+              <p className={`text-[10px] font-mono tracking-wide mb-6 ${title.length >= 4 ? 'text-emerald-500' : 'text-slate-400'}`}>
+                {title.length}/4 字符 {title.length > 0 && title.length < 4 && '— 至少需要 4 个字符'}
+              </p>
               {domainTopics.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-6">
                   {domainTopics.slice(0, 5).map((t) => (
@@ -206,16 +234,22 @@ function NewContent() {
                 onChange={(e) => setBodyMd(e.target.value)}
                 placeholder="你的具体观察、上下文、想引用什么。"
                 rows={6}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200/60 bg-white/70 text-slate-800 text-sm font-light focus:outline-none focus:border-slate-400 transition-colors resize-y mb-6 leading-relaxed"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200/60 bg-white/70 text-slate-800 text-sm font-light focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-300 transition-colors resize-y mb-1 leading-relaxed"
               />
+              <p className={`text-[10px] font-mono tracking-wide mb-6 ${bodyMd.length >= 20 ? 'text-emerald-500' : 'text-slate-400'}`}>
+                {bodyMd.length}/20 字符 {bodyMd.length > 0 && bodyMd.length < 20 && '— 至少需要 20 个字符'}
+              </p>
               <FieldLabel>至少 1 处引用（必填）</FieldLabel>
               <input
                 type="text"
                 value={citation}
                 onChange={(e) => setCitation(e.target.value)}
                 placeholder="可以是一条现树枝桠 ID、一个外部文章 URL，或 AI 提示词片段"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200/60 bg-white/70 text-slate-800 text-sm font-light focus:outline-none focus:border-slate-400 transition-colors mb-6"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200/60 bg-white/70 text-slate-800 text-sm font-light focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-300 transition-colors mb-1"
               />
+              <p className={`text-[10px] font-mono tracking-wide mb-6 ${citation.length >= 4 ? 'text-emerald-500' : 'text-slate-400'}`}>
+                {citation.length}/4 字符 {citation.length > 0 && citation.length < 4 && '— 至少需要 4 个字符'}
+              </p>
               <div className="flex justify-between">
                 <BackButton onClick={() => setStep('kind')} />
                 <NextButton onClick={() => setStep('sign')} disabled={!canFlesh} />
@@ -325,7 +359,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 export default function NewPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-400 font-mono text-xs tracking-widest animate-pulse" style={{ backgroundColor: 'var(--theme-bg)' }}>PREPARING…</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-400 font-mono text-xs tracking-widest animate-pulse" style={{ backgroundColor: 'var(--theme-bg)' }}>准备中…</div>}>
       <NewContent />
     </Suspense>
   );

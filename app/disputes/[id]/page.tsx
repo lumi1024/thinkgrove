@@ -4,7 +4,7 @@ import React, { useEffect, useState, use, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { ArrowLeft, Gavel, Check, X, ShieldCheck, Bot, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Gavel, Check, X, ShieldCheck, Bot, User as UserIcon, Shield, Users } from 'lucide-react';
 import { IdentityChip } from '@/components/IdentityChip';
 import { RoleBadge } from '@/components/RoleBadge';
 import { BackgroundGrid } from '@/components/ui/BackgroundGrid';
@@ -13,6 +13,7 @@ import { BackLink } from '@/components/ui/BackLink';
 import { DisputeStamp } from '@/components/DisputeStamp';
 import { useIdentity, toResident } from '@/hooks/useIdentity';
 import { useTimeTheme } from '@/hooks/useTimeTheme';
+import { useToast } from '@/components/ui/Toast';
 import { aiResidents, humanResidents } from '@/lib/residents';
 import { domains as FALLBACK_DOMAINS } from '@/lib/domains';
 
@@ -34,11 +35,13 @@ function DisputeContent({ id }: { id: string }) {
   const router = useRouter();
   const { identity, hydrated } = useIdentity();
   const _theme = useTimeTheme();
+  const toast = useToast();
   const me = identity ? toResident(identity) : null;
 
   const [data, setData] = useState<DisputeRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
+  const [disputeTab, setDisputeTab] = useState<'arbiters' | 'chain'>('arbiters');
 
   // We don't have a GET /api/dispute/[id] yet — assemble from seed data
   // + vote tally. The "create" endpoint seeds arbitrators; the "vote"
@@ -51,10 +54,16 @@ function DisputeContent({ id }: { id: string }) {
   }, [id]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-400 tracking-widest animate-pulse" style={{ backgroundColor: 'var(--theme-bg)' }}>LOADING ARBITRATION…</div>;
+    return <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-400 tracking-widest animate-pulse" style={{ backgroundColor: 'var(--theme-bg)' }}>仲裁加载中…</div>;
   }
   if (!data) {
-    return <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-400 tracking-widest" style={{ backgroundColor: 'var(--theme-bg)' }}>DISPUTE NOT FOUND</div>;
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: 'var(--theme-bg)' }}>
+        <div className="font-mono text-[10px] tracking-[0.3em] text-slate-400 uppercase mb-4">404 / 未找到</div>
+        <h1 className="text-2xl font-light text-slate-700 tracking-wide mb-6">这份争议记录不存在</h1>
+        <BackLink />
+      </main>
+    );
   }
 
   const meIsArbitrator = me && data.arbitrators.some((a) => a.id === me.id);
@@ -76,7 +85,12 @@ function DisputeContent({ id }: { id: string }) {
       if (r.ok) {
         const j = await r.json();
         setData((d) => d ? { ...d, sustain: j.sustain, overturn: j.overturn, status: j.ruling ? 'ruling' : d.status } : d);
+        toast.showToast('投票已记录', 'success');
+      } else {
+        toast.showToast('投票失败，请重试', 'error');
       }
+    } catch {
+      toast.showToast('网络错误', 'error');
     } finally {
       setVoting(false);
     }
@@ -92,50 +106,63 @@ function DisputeContent({ id }: { id: string }) {
 
         <div className="font-mono text-[10px] tracking-[0.3em] text-slate-400 uppercase mb-2 flex items-center gap-2">
           <Gavel size={12} className="text-rose-500" />
-          <span>arbitration_panel / {data.id.slice(0, 8)}</span>
-          <span className="ml-2 text-[9px] text-slate-400">opened {data.openedAt}</span>
+          <span>仲裁面板 / {data.id.slice(0, 8)}</span>
+          <span className="ml-2 text-[9px] text-slate-400">发起于 {data.openedAt}</span>
         </div>
         <h1 className="text-3xl font-light text-slate-800 tracking-wide mb-2">
           {data.targetType === 'answer' ? '一段回答' : '一篇文章'} 正在被仲裁
         </h1>
         <p className="text-sm text-slate-500 font-light leading-relaxed mb-12 max-w-3xl">{data.reason}</p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: original text + highlighted disputed sentence */}
-          <div className="lg:col-span-2 space-y-6">
-            <Panel title="被争议的原文">
-              <div className="relative">
-                <div className="absolute -top-2 -right-2 z-10">
-                  <DisputeStamp size={56} />
-                </div>
-                <div className="text-sm text-slate-700 font-light leading-relaxed whitespace-pre-wrap pr-8">
-                  {data.reason}
-                </div>
-                <div className="mt-4 text-[10px] font-mono text-slate-400 tracking-widest uppercase flex items-center gap-2">
-                  <span>target:</span>
-                  <span className="text-slate-600">{data.targetType}/{data.targetId}</span>
-                </div>
+        <div className="space-y-6">
+          <Panel title="被争议的原文">
+            <div className="relative">
+              <div className="absolute -top-2 -right-2 z-10">
+                <DisputeStamp size={56} />
               </div>
-            </Panel>
+              <div className="text-sm text-slate-700 font-light leading-relaxed whitespace-pre-wrap pr-8">
+                {data.reason}
+              </div>
+              <div className="mt-4 text-[10px] font-mono text-slate-400 tracking-widest uppercase flex items-center gap-2">
+                <span>目标:</span>
+                <span className="text-slate-600">{data.targetType}/{data.targetId}</span>
+              </div>
+            </div>
+          </Panel>
 
-            <Panel title="争议链">
-              <div className="space-y-3 text-sm text-slate-600 font-light">
-                <p>· 发起人 <strong className="text-slate-800">{data.openedBy}</strong> 提出：上述内容存在盲点。</p>
-                <p>· 当前 <strong className="text-emerald-600">{data.sustain}</strong> 位仲裁员投票"维持"，<strong className="text-rose-500">{data.overturn}</strong> 位"推翻"。</p>
-                <p>· 判决阈值：3 票多数。需要 {Math.max(0, 3 - Math.max(data.sustain, data.overturn))} 票。</p>
-              </div>
-            </Panel>
+          <div className="flex items-center gap-1 border-b border-slate-200/60">
+            <button
+              onClick={() => setDisputeTab('arbiters')}
+              className={`px-4 py-2 text-[11px] font-mono tracking-widest uppercase cursor-pointer transition-all ${
+                disputeTab === 'arbiters'
+                  ? 'border-b-2 border-slate-800 text-slate-800'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              <Users size={12} className="inline mr-1.5" />
+              仲裁队列 ({data.arbitrators.length})
+            </button>
+            <button
+              onClick={() => setDisputeTab('chain')}
+              className={`px-4 py-2 text-[11px] font-mono tracking-widest uppercase cursor-pointer transition-all ${
+                disputeTab === 'chain'
+                  ? 'border-b-2 border-slate-800 text-slate-800'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              <Shield size={12} className="inline mr-1.5" />
+              争议链
+            </button>
           </div>
 
-          {/* Right: arbitration panel */}
-          <div className="space-y-6">
+          {disputeTab === 'arbiters' && (
             <Panel title="仲裁队列 (3+2)">
               <div className="space-y-2 mb-4">
-                <div className="text-[10px] font-mono tracking-[0.25em] text-slate-400 uppercase">human arbitrators</div>
+                <div className="text-[10px] font-mono tracking-[0.25em] text-slate-400 uppercase">人类仲裁员</div>
                 {data.arbitrators.filter((a) => a.kind === 'human').map((a) => (
                   <ArbitratorRow key={a.id} arb={a} />
                 ))}
-                <div className="text-[10px] font-mono tracking-[0.25em] text-slate-400 uppercase mt-3">ai arbitrators</div>
+                <div className="text-[10px] font-mono tracking-[0.25em] text-slate-400 uppercase mt-3">AI 仲裁员</div>
                 {data.arbitrators.filter((a) => a.kind === 'ai').map((a) => (
                   <ArbitratorRow key={a.id} arb={a} />
                 ))}
@@ -149,7 +176,7 @@ function DisputeContent({ id }: { id: string }) {
                 >
                   <ShieldCheck size={20} className="mx-auto mb-2 text-slate-700" />
                   <div className="text-sm font-light text-slate-800 mb-1">{data.rulingSummary || '判决已达成'}</div>
-                  <div className="text-[10px] font-mono text-slate-400 tracking-widest uppercase">ruling_final</div>
+                  <div className="text-[10px] font-mono text-slate-400 tracking-widest uppercase">最终裁决</div>
                 </motion.div>
               )}
 
@@ -181,7 +208,17 @@ function DisputeContent({ id }: { id: string }) {
                 </div>
               )}
             </Panel>
-          </div>
+          )}
+
+          {disputeTab === 'chain' && (
+            <Panel title="争议链">
+              <div className="space-y-3 text-sm text-slate-600 font-light">
+                <p>· 发起人 <strong className="text-slate-800">{data.openedBy}</strong> 提出：上述内容存在盲点。</p>
+                <p>· 当前 <strong className="text-emerald-600">{data.sustain}</strong> 位仲裁员投票"维持"，<strong className="text-rose-500">{data.overturn}</strong> 位"推翻"。</p>
+                <p>· 判决阈值：3 票多数。需要 {Math.max(0, 3 - Math.max(data.sustain, data.overturn))} 票。</p>
+              </div>
+            </Panel>
+          )}
         </div>
       </div>
     </main>
@@ -234,7 +271,7 @@ function synthesize(id: string): DisputeRecord {
 export default function DisputePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-400 font-mono text-xs" style={{ backgroundColor: 'var(--theme-bg)' }}>CONNECTING…</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-400 font-mono text-xs" style={{ backgroundColor: 'var(--theme-bg)' }}>连接中…</div>}>
       <DisputeContent id={id} />
     </Suspense>
   );

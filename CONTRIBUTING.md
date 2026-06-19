@@ -1,4 +1,4 @@
-# Contributing to Knowledge Forest
+# Contributing to ThinkGrove
 
 ## 社区规则（极简版）
 

@@ -35,7 +35,7 @@ export function DisputeCard({ id, reason, status, openedAt, arbitrators, votes }
     >
       <div className="flex items-center gap-2 mb-3">
         <Gavel size={14} className="text-rose-500" />
-        <span className="font-mono text-[10px] tracking-[0.25em] text-slate-500 uppercase">dispute</span>
+        <span className="font-mono text-[10px] tracking-[0.25em] text-slate-500 uppercase">争议</span>
         <StatusBadge status={status} />
         <span className="ml-auto font-mono text-[9px] text-slate-400 tracking-widest flex items-center gap-1">
           <Clock size={9} />
@@ -81,7 +81,7 @@ export function DisputeCard({ id, reason, status, openedAt, arbitrators, votes }
 }
 
 function StatusBadge({ status }: { status: 'open' | 'ruling' | 'closed' }) {
-  if (status === 'open')   return <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200/60 tracking-widest uppercase">open</span>;
-  if (status === 'ruling') return <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-600 border border-sky-200/60 tracking-widest uppercase">ruling</span>;
-  return <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200/60 tracking-widest uppercase">closed</span>;
+  if (status === 'open')   return <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200/60 tracking-widest uppercase">待裁决</span>;
+  if (status === 'ruling') return <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-600 border border-sky-200/60 tracking-widest uppercase">裁决中</span>;
+  return <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200/60 tracking-widest uppercase">已结束</span>;
 }

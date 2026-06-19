@@ -1,20 +1,23 @@
 'use client';
 
-import React, { useState, useEffect, use, useMemo } from 'react';
+import React, { useState, useEffect, use, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, MessageSquare, FileText, User, Bot, Trophy, Compass, Activity, Sparkles } from 'lucide-react';
+import { MessageSquare, FileText, User, Users, Bot, Trophy, Compass, Activity, Sparkles } from 'lucide-react';
 import { KnowledgeTree } from '@/components/KnowledgeTree';
 import { AmbientParticles } from '@/components/ui/AmbientParticles';
 import { BackgroundGrid } from '@/components/ui/BackgroundGrid';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Panel } from '@/components/ui/Panel';
+import { BackLink } from '@/components/ui/BackLink';
 import { createLCG } from '@/lib/seed';
 import { domains } from '@/lib/domains';
 import { topics } from '@/lib/topics';
 import { aiResidents, humanResidents } from '@/lib/residents';
 import { useTimeTheme } from '@/hooks/useTimeTheme';
 import { useIdentity, toResident } from '@/hooks/useIdentity';
+import { useGuideSteps } from '@/hooks/useGuideSteps';
+import { GuideTooltip } from '@/components/GuideTooltip';
 
 export default function TreeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -24,6 +27,13 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
 
   const domainData = useMemo(() => domains.find(d => d.id === id) || null, [id]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const treeGuideRef = useRef<HTMLDivElement>(null);
+  const { markSeen, hasSeen } = useGuideSteps();
+  const [showTreeGuide, setShowTreeGuide] = useState(false);
+
+  useEffect(() => {
+    setShowTreeGuide(!hasSeen(5));
+  }, [hasSeen]);
 
   // Live "tree stats" — purely cosmetic, drifts like an instrument readout
   const [stats, setStats] = useState({ nodes: 1284, depth: 6, sync: 'STABLE', lastBloom: '2m ago' });
@@ -36,6 +46,19 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
       }));
     }, 2400);
     return () => clearInterval(id);
+  }, []);
+
+  const [scrollY, setScrollY] = useState(0);
+  const [showScrollHint, setShowScrollHint] = useState(true);
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrollY(y);
+      setShowScrollHint(y < 60);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const domainTopics = useMemo(() => {
@@ -167,7 +190,13 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   if (!domainData) {
-    return <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-400 tracking-widest" style={{ backgroundColor: 'var(--theme-bg)' }}>NODE NOT FOUND</div>;
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: 'var(--theme-bg)' }}>
+        <div className="font-mono text-[10px] tracking-[0.3em] text-slate-400 uppercase mb-4">404 / 未找到</div>
+        <h1 className="text-2xl font-light text-slate-700 tracking-wide mb-6">这片区域还没有树</h1>
+        <BackLink />
+      </main>
+    );
   }
 
   return (
@@ -191,28 +220,36 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
 
         <AmbientParticles color={domainData.color} />
 
-        {/* Back button — same component language as graph page */}
-        <button
-          onClick={() => router.push('/')}
-          className="absolute top-8 left-8 z-50 flex items-center justify-center w-12 h-12 rounded-full border border-slate-200/60 bg-white/40 backdrop-blur-md cursor-pointer hover:bg-white/80 hover:shadow-lg transition-all duration-300 group shadow-sm"
-        >
-          <ArrowLeft size={18} className="text-slate-500 group-hover:text-slate-800" strokeWidth={1.5} />
-        </button>
+        {/* Back navigation */}
+        <div ref={treeGuideRef} className="absolute top-8 left-8 z-50">
+          <BackLink />
+        </div>
 
-        {/* Hint to scroll — small, monospace, bottom-center */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          transition={{ delay: 2.2, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 font-mono text-[10px] text-slate-400 tracking-[0.25em] uppercase flex items-center gap-2 pointer-events-none"
-        >
-          <span>scroll to dive deeper</span>
-          <motion.span
-            animate={{ y: [0, 4, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-            className="inline-block w-px h-3 bg-slate-400"
+        {showTreeGuide && (
+          <GuideTooltip
+            step={5}
+            onDismiss={() => { markSeen(5); setShowTreeGuide(false); }}
+            identity={me ? { kind: me.kind, displayName: me.displayName, handle: me.handle } : null}
+            anchorRef={treeGuideRef}
           />
-        </motion.div>
+        )}
+
+        {/* Hint to scroll — persists until user scrolls, reappears at top */}
+        {showScrollHint && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: scrollY < 60 ? 0.5 : 0 }}
+            transition={{ duration: 0.6 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 font-mono text-[10px] text-slate-400 tracking-[0.25em] uppercase flex items-center gap-2 pointer-events-none"
+          >
+            <span>滚动探索更深</span>
+            <motion.span
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              className="inline-block w-px h-3 bg-slate-400"
+            />
+          </motion.div>
+        )}
 
         {/* Floating status — top right */}
         <GlassCard
@@ -221,36 +258,66 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
         >
           <div className="flex items-center gap-2 mb-3">
             <Activity size={14} className="text-slate-400" />
-            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">Tree Telemetry</span>
+            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">树况遥测</span>
           </div>
           <div className="space-y-2 font-mono text-[11px]">
             <div className="flex justify-between text-slate-500">
-              <span>nodes</span>
+              <span>节点数</span>
               <span className="text-slate-800 tabular-nums">{stats.nodes.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-slate-500">
-              <span>depth</span>
+              <span>深度</span>
               <span className="text-slate-800 tabular-nums">{stats.depth}</span>
             </div>
             <div className="flex justify-between text-slate-500">
-              <span>sync</span>
+              <span>同步状态</span>
               <span className="text-emerald-500 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 {stats.sync}
               </span>
             </div>
             <div className="flex justify-between text-slate-500">
-              <span>last_bloom</span>
+              <span>上次萌发</span>
               <span className="text-slate-800">{stats.lastBloom}</span>
             </div>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-200/60 flex items-center gap-1.5">
             <Compass size={11} className="text-slate-400" />
             <span className="font-mono text-[9px] tracking-widest text-slate-400 uppercase">
-              origin: /{domainData.id}
+              来源: /{domainData.id}
             </span>
           </div>
         </GlassCard>
+
+        {/* Residents on tree — top right, below telemetry */}
+        {residentsOnTree.length > 0 && (
+          <GlassCard
+            delay={0.35}
+            className="absolute top-56 right-8 z-30 px-5 py-4 w-[260px] hidden md:block"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Users size={13} className="text-slate-400" />
+              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">驻地居民</span>
+              <span className="text-[10px] font-mono text-slate-400 ml-auto">{residentsOnTree.length}</span>
+            </div>
+            <div className="space-y-2">
+              {residentsOnTree.map((r) => (
+                <div key={r.id} className="flex items-center gap-2">
+                  {r.kind === 'ai'
+                    ? <Bot size={10} className="text-sky-500 shrink-0" />
+                    : <User size={10} className="text-emerald-500 shrink-0" />
+                  }
+                  <span className="text-[11px] text-slate-700 font-light truncate">{r.displayName}</span>
+                  <span className={`text-[9px] font-mono tracking-widest uppercase ml-auto ${
+                    r.state === 'thinking' ? 'text-[#0ea5e9]' :
+                    r.state === 'resting' ? 'text-slate-400' :
+                    'text-slate-500'
+                  }`}>{r.state}</span>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        )}
 
         {/* Domain title — top left, beneath the back button */}
         <GlassCard
@@ -266,7 +333,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
               className="text-[10px] font-mono uppercase tracking-[0.3em]"
               style={{ color: domainData.color }}
             >
-              knowledge domain
+              知识领域
             </span>
           </div>
           <h1 className="text-3xl font-light text-slate-800 tracking-wide leading-tight">
@@ -284,7 +351,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
         >
           <div className="flex items-center gap-2 mb-3">
             <Sparkles size={13} className="text-slate-400" />
-            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">branching topics</span>
+            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">枝桠话题</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {domainTopics.map((t, i) => (
@@ -310,7 +377,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
         >
           <div className="flex items-center gap-2 mb-3">
             <Trophy size={13} className="text-slate-400" />
-            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">top cultivators</span>
+            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">培育者排行</span>
           </div>
           <div className="space-y-2">
             {contributors.slice(0, 4).map((c, i) => (
@@ -377,7 +444,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
               className="text-[10px] font-mono uppercase tracking-[0.3em]"
               style={{ color: domainData.color }}
             >
-              knowledge domain
+              知识领域
             </span>
           </div>
           <h1 className="text-2xl font-light text-slate-800 tracking-wide">
@@ -392,7 +459,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
       {/* ============================================================
           DEEP DIVE — scroll into the tree's content
           ============================================================ */}
-      <section className="relative w-full bg-gradient-to-b from-[#f4f7f9] via-[#eef3f6] to-[#e8eef2] py-24 md:py-32">
+      <section className="relative w-full bg-gradient-to-b from-[var(--theme-bg)] via-[var(--theme-bg)] to-[var(--theme-bg)] py-24 md:py-32">
         <div className="max-w-6xl mx-auto px-6 md:px-12">
           {/* Section heading */}
           <motion.div
@@ -411,7 +478,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                 className="text-[10px] font-mono uppercase tracking-[0.3em]"
                 style={{ color: domainData.color }}
               >
-                canopy / {selectedNode || domainData.domain}
+                树冠 / {selectedNode || domainData.domain}
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl font-light text-slate-800 tracking-wide leading-tight max-w-3xl">
@@ -458,9 +525,9 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-baseline justify-between mb-8 border-b border-slate-300/60 pb-3">
                   <div className="flex items-center gap-3">
                     <FileText size={18} className="text-slate-400" />
-                    <h3 className="text-sm font-medium tracking-[0.25em] text-slate-700 uppercase">Articles</h3>
+                    <h3 className="text-sm font-medium tracking-[0.25em] text-slate-700 uppercase">文章</h3>
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400 tracking-widest">{articles.length} entries</span>
+                  <span className="text-[10px] font-mono text-slate-400 tracking-widest">{articles.length} 篇</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {articles.map((article, i) => (
@@ -493,7 +560,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                           className="w-3 h-px"
                           style={{ backgroundColor: domainData.color }}
                         />
-                        read article
+                        阅读文章
                       </div>
                     </motion.article>
                   ))}
@@ -505,9 +572,9 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-baseline justify-between mb-8 border-b border-slate-300/60 pb-3">
                   <div className="flex items-center gap-3">
                     <MessageSquare size={18} className="text-slate-400" />
-                    <h3 className="text-sm font-medium tracking-[0.25em] text-slate-700 uppercase">Community Voice</h3>
+                    <h3 className="text-sm font-medium tracking-[0.25em] text-slate-700 uppercase">社区讨论</h3>
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400 tracking-widest">{posts.length} threads</span>
+                  <span className="text-[10px] font-mono text-slate-400 tracking-widest">{posts.length} 条</span>
                 </div>
                 <div className="space-y-4">
                   {posts.map((post, i) => (
@@ -525,7 +592,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                           <span className="text-xs font-mono text-slate-700 font-medium tracking-wide">{post.author}</span>
                         </div>
                         <span className="text-[10px] bg-slate-200/60 text-slate-600 px-2.5 py-1 rounded-full font-mono tracking-wide">
-                          {post.replies} replies
+                          {post.replies} 回复
                         </span>
                       </div>
                       <p className="text-[15px] text-slate-700 leading-relaxed font-light" style={{ letterSpacing: '0.01em' }}>
@@ -541,9 +608,9 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
               <div className="flex items-baseline justify-between mb-8 border-b border-slate-300/60 pb-3">
                 <div className="flex items-center gap-3">
                   <Bot size={18} className="text-slate-400" />
-                  <h3 className="text-sm font-medium tracking-[0.25em] text-slate-700 uppercase">Residents</h3>
+                  <h3 className="text-sm font-medium tracking-[0.25em] text-slate-700 uppercase">驻地居民</h3>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400 tracking-widest">{residentsOnTree.length} on this tree</span>
+                <span className="text-[10px] font-mono text-slate-400 tracking-widest">{residentsOnTree.length} 在这棵树上</span>
               </div>
 
               {me && me.kind === 'ai' && (
@@ -584,9 +651,9 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                 <div className="flex items-baseline justify-between mb-8 border-b border-slate-300/60 pb-3">
                   <div className="flex items-center gap-3">
                     <Trophy size={18} className="text-slate-400" />
-                    <h3 className="text-sm font-medium tracking-[0.25em] text-slate-700 uppercase">Hall of Cultivators</h3>
+                    <h3 className="text-sm font-medium tracking-[0.25em] text-slate-700 uppercase">培育者殿堂</h3>
                   </div>
-                  <span className="text-[10px] font-mono text-slate-400 tracking-widest">top {contributors.length} this season</span>
+                  <span className="text-[10px] font-mono text-slate-400 tracking-widest">本季前 {contributors.length} 名</span>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {contributors.map((c, i) => (
@@ -613,7 +680,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                         <span className="text-sm text-slate-700 font-medium truncate">{c.name}</span>
                       </div>
                       <div className="text-[11px] font-mono text-slate-500 tabular-nums">
-                        {c.score} <span className="text-[9px] text-slate-400">pts</span>
+                        {c.score} <span className="text-[9px] text-slate-400">分</span>
                       </div>
                     </motion.div>
                   ))}
@@ -625,8 +692,8 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
 
         {/* Footer signature */}
         <div className="max-w-6xl mx-auto px-6 md:px-12 mt-32 pt-8 border-t border-slate-300/40 flex flex-col md:flex-row justify-between gap-4 font-mono text-[10px] text-slate-400 tracking-[0.2em] uppercase">
-          <div>node: {domainData.id} // canopy depth 3</div>
-          <div>soil pH 6.4 · sunlight 78% · humidity 62%</div>
+          <div>节点: {domainData.id} // 树冠深度 3</div>
+          <div>土壤 pH 6.4 · 光照 78% · 湿度 62%</div>
           <div>{new Date().toISOString().split('T')[0]}</div>
         </div>
       </section>

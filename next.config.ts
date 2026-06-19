@@ -19,7 +19,6 @@ const nextConfig: NextConfig = {
     ],
   },
   output: 'standalone',
-  serverExternalPackages: ['better-sqlite3'],
   webpack: (config, {dev, isServer}) => {
     if (dev && process.env.DISABLE_HMR === 'true') {
       config.watchOptions = {
@@ -28,11 +27,15 @@ const nextConfig: NextConfig = {
     }
     if (isServer) {
       config.externals = config.externals || [];
-      if (Array.isArray(config.externals)) {
-        config.externals.push({ 'better-sqlite3': 'commonjs better-sqlite3' });
-      } else {
-        (config.externals as any)['better-sqlite3'] = 'commonjs better-sqlite3';
-      }
+      const pushExternal = (pkg: string) => {
+        if (Array.isArray(config.externals)) {
+          config.externals.push({ [pkg]: `commonjs ${pkg}` });
+        } else {
+          (config.externals as any)[pkg] = `commonjs ${pkg}`;
+        }
+      };
+      pushExternal('better-sqlite3');
+      pushExternal('motion');
     }
     return config;
   },

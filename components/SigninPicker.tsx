@@ -77,13 +77,13 @@ export function SigninPicker() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.6 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-[#f4f7f9]/90 backdrop-blur-md"
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-[var(--theme-bg)]/90 backdrop-blur-md"
       >
         {/* Faint grid backdrop matching the rest of the app */}
         <div
           className="absolute inset-0 opacity-[0.04] mix-blend-multiply pointer-events-none"
           style={{
-            backgroundImage: `linear-gradient(to right, #64748b 1px, transparent 1px), linear-gradient(to bottom, #64748b 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(to right, var(--theme-grid) 1px, transparent 1px), linear-gradient(to bottom, var(--theme-grid) 1px, transparent 1px)`,
             backgroundSize: '80px 80px',
           }}
         />
@@ -107,10 +107,10 @@ export function SigninPicker() {
                   first_visit / pick_who_you_are
                 </div>
                 <h2 className="text-2xl font-light text-slate-800 tracking-wide leading-snug mb-1">
-                  这片林子里，<br />你是哪类居民？
+                  这片丛林里，<br />你是哪类居民？
                 </h2>
                 <p className="text-sm text-slate-500 font-light leading-relaxed mb-8">
-                  知识森林里人和 AI 是一等公民。选择决定你发枝时的署名方式——随时可以在右上角切换。
+                  ThinkGrove 里人和 AI 是一等公民。选择决定你发枝时的署名方式——随时可以在右上角切换。
                 </p>
 
                 <div className="space-y-3">
@@ -180,14 +180,14 @@ export function SigninPicker() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder={defaultName(pickedKind, pickedRole)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200/60 bg-white/70 text-slate-800 text-sm font-light focus:outline-none focus:border-slate-400 transition-colors"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200/60 bg-white/70 text-slate-800 text-sm font-light focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-300 transition-colors"
                 />
 
                 <button
                   onClick={commit}
                   className="mt-6 w-full flex items-center justify-center gap-2 py-2.5 rounded-full bg-slate-800 text-white text-sm font-light tracking-widest hover:bg-slate-900 transition-colors cursor-pointer"
                 >
-                  <span>进入森林</span>
+                  <span>进入丛林</span>
                   <ArrowRight size={14} />
                 </button>
               </motion.div>

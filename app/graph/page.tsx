@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, MessageSquare, FileText, User, Bot, Trophy } from 'lucide-react';
 import { BackgroundGrid } from '@/components/ui/BackgroundGrid';
+import { BackLink } from '@/components/ui/BackLink';
 import { createLCG } from '@/lib/seed';
 import { useTimeTheme } from '@/hooks/useTimeTheme';
 
@@ -15,11 +16,9 @@ function GraphContent() {
   const question = searchParams.get('q') || '知识网络的原初节点';
   const color = searchParams.get('color') || '#0ea5e9';
   const _theme = useTimeTheme();
-
   const [hoveredNode, setHoveredNode] = useState<{id: string, label: string, desc: string, x: number, y: number, root?: boolean} | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
 
-  // Generate force-directed-like static graph deterministically
   const graphData = useMemo(() => {
     const random = createLCG(question.charCodeAt(0) + 12345);
 
@@ -41,7 +40,6 @@ function GraphContent() {
         const id = `node-1-${i}`;
         nodes.push({
             id, root: false,
-            // Alternate human/AI/external kinds to make the graph feel populated.
             kind: (['human', 'ai', 'external'] as const)[i % 3],
             label: concepts[Math.floor(random() * concepts.length)],
             desc: '一级关联：直接上下游',
@@ -49,7 +47,6 @@ function GraphContent() {
             y: Math.sin(angle) * dist,
             radius: 20
         });
-        // 4-class edges: adopt (default), cite, dispute, rewrite
         const rel = (['adopted', 'cite', 'cite', 'rewrite', 'dispute'] as const)[i % 5];
         edges.push({ source: 'core', target: id, type: 'primary', relation: rel });
     }
@@ -199,17 +196,12 @@ function GraphContent() {
       <BackgroundGrid size={100} color="var(--theme-grid)" />
       <div className="absolute top-[20%] left-[10%] w-[40vw] h-[40vw] rounded-full blur-[200px] opacity-40 mix-blend-multiply pointer-events-none transition-all duration-[10s]" style={{ backgroundColor: color }} />
 
-      <button 
-        onClick={() => router.back()}
-        className="absolute top-10 left-10 z-50 w-12 h-12 flex items-center justify-center rounded-full border border-slate-200/60 bg-white/40 backdrop-blur-md hover:bg-white/80 transition-all text-slate-700 hover:text-slate-900 shadow-md group pointer-events-auto cursor-pointer"
-      >
-        <ArrowLeft size={18} strokeWidth={1.5} className="group-hover:-translate-x-0.5 transition-transform" />
-      </button>
+      <BackLink />
 
       <div className="relative z-10 w-full h-screen flex flex-col md:flex-row">
         {/* Left Side: Graph */}
         <div className="w-full md:w-1/2 h-1/2 md:h-full relative flex items-center justify-center">
-          <div className="absolute top-1/2 left-1/2 w-0 h-0 pointer-events-none origin-center scale-[0.6] sm:scale[0.8] md:scale-[0.8] lg:scale-100 transition-transform">
+          <div className="absolute top-1/2 left-1/2 w-0 h-0 pointer-events-none origin-center scale-[0.6] sm:scale-80 md:scale-80 lg:scale-100 transition-transform">
              <svg className="overflow-visible pointer-events-auto" style={{ transform: 'translate(-50%, -50%)' }} width="1200" height="1200" viewBox="-600 -600 1200 1200">
                <g>
                   {/* Edges */}

@@ -4,7 +4,7 @@ import React, { useEffect, useState, use, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { Bot, User as UserIcon, ShieldCheck, Cpu, BookOpen, Quote, AlertTriangle } from 'lucide-react';
+import { Bot, User as UserIcon, ShieldCheck, Cpu, BookOpen, Quote as QuoteIcon, AlertTriangle } from 'lucide-react';
 import { IdentityChip, Signature } from '@/components/IdentityChip';
 import { ReputationChart } from '@/components/ReputationChart';
 import { RoleBadge } from '@/components/RoleBadge';
@@ -14,6 +14,8 @@ import { Panel } from '@/components/ui/Panel';
 import { BackLink } from '@/components/ui/BackLink';
 import { useIdentity, toResident } from '@/hooks/useIdentity';
 import { useTimeTheme } from '@/hooks/useTimeTheme';
+import { useGuideSteps } from '@/hooks/useGuideSteps';
+import { GuideTooltip } from '@/components/GuideTooltip';
 import { aiResidents, humanResidents } from '@/lib/residents';
 import { computeReputation, demoReputation } from '@/lib/reputation';
 import { domains as FALLBACK_DOMAINS } from '@/lib/domains';
@@ -38,9 +40,16 @@ function ProfileContent({ handle }: { handle: string }) {
   const router = useRouter();
   const { identity, hydrated } = useIdentity();
   const _theme = useTimeTheme();
+  const { markSeen, hasSeen } = useGuideSteps();
+  const [showProfileGuide, setShowProfileGuide] = useState(false);
+
+  useEffect(() => {
+    setShowProfileGuide(!hasSeen(6));
+  }, [hasSeen]);
 
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [myBranches, setMyBranches] = useState<{ branches: any[]; answers: any[]; articles: any[]; stats: { total: number } } | null>(null);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -78,15 +87,24 @@ function ProfileContent({ handle }: { handle: string }) {
     return () => { cancelled = true; };
   }, [handle, identity, hydrated]);
 
+  useEffect(() => {
+    if (!data?.id) return;
+    let cancelled = false;
+    fetch(`/api/my/branches?userId=${encodeURIComponent(data.id)}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((j) => { if (!cancelled) setMyBranches(j); });
+    return () => { cancelled = true; };
+  }, [data?.id]);
+
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-400 tracking-widest animate-pulse" style={{ backgroundColor: 'var(--theme-bg)' }}>RESOLVING HANDLE…</div>;
+    return <div className="min-h-screen flex items-center justify-center font-mono text-xs text-slate-400 tracking-widest animate-pulse" style={{ backgroundColor: 'var(--theme-bg)' }}>解析中…</div>;
   }
   if (!data) {
     return (
       <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--theme-bg)' }}>
         <div className="text-center">
-          <div className="font-mono text-xs text-slate-400 tracking-widest mb-2">USER NOT FOUND</div>
-          <Link href="/" className="text-[11px] font-mono text-slate-500 hover:text-slate-800 tracking-widest uppercase">back to forest</Link>
+          <div className="font-mono text-xs text-slate-400 tracking-widest mb-2">用户不存在</div>
+          <Link href="/" className="text-[11px] font-mono text-slate-500 hover:text-slate-800 tracking-widest uppercase">返回丛林</Link>
         </div>
       </main>
     );
@@ -101,7 +119,16 @@ function ProfileContent({ handle }: { handle: string }) {
       />
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-10 py-12">
-        <BackLink />
+        <div className="relative">
+          <BackLink />
+          {showProfileGuide && (
+            <GuideTooltip
+              step={6}
+              onDismiss={() => { markSeen(6); setShowProfileGuide(false); }}
+              identity={data ? { kind: data.kind, displayName: data.displayName, handle: data.handle } : null}
+            />
+          )}
+        </div>
 
         {/* Header */}
         <div className="flex items-start gap-6 mb-12">
@@ -200,40 +227,72 @@ function ProfileContent({ handle }: { handle: string }) {
               </Panel>
             )}
 
-            <Panel title={`最近被引用 (${data.recentCitations.length})`}>
-              {data.recentCitations.length > 0 ? (
-                <div className="space-y-2">
-                  {data.recentCitations.map((c, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[12px] text-slate-600 font-light">
-                      <Quote size={11} className="text-slate-400 shrink-0" />
-                      <span className="font-mono text-slate-400 text-[10px]">{c.relation}</span>
-                      <span className="text-slate-700">{c.from_type}/{c.from_id.slice(0, 8)} → {c.to_type}/{c.to_id.slice(0, 8)}</span>
+            <Panel title={`我发过的枝 (${myBranches?.stats?.total ?? '—'})`}>
+              {myBranches && myBranches.stats.total > 0 ? (
+                <div className="space-y-4">
+                  {myBranches.branches.length > 0 && (
+                    <div>
+                      <div className="text-[10px] font-mono text-slate-400 tracking-widest uppercase mb-2">枝桠</div>
+                      <div className="space-y-1.5">
+                        {myBranches.branches.slice(0, 8).map((b) => {
+                          const d = FALLBACK_DOMAINS.find((x) => x.id === b.domainId);
+                          return (
+                            <div key={b.id} className="flex items-center gap-2 text-[12px]">
+                              <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: d?.color || '#64748b' }} />
+                              <Link href={`/tree/${b.domainId}`} className="text-slate-700 hover:text-slate-900 truncate">{b.title}</Link>
+                              <span className="font-mono text-[9px] text-slate-400 shrink-0">{b.kind}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  ))}
+                  )}
+                  {myBranches.answers.length > 0 && (
+                    <div>
+                      <div className="text-[10px] font-mono text-slate-400 tracking-widest uppercase mb-2">回答</div>
+                      <div className="space-y-1.5">
+                        {myBranches.answers.slice(0, 5).map((a) => (
+                          <div key={a.id} className="text-[12px] text-slate-600 font-light truncate">{a.bodyPreview}…</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {myBranches.articles.length > 0 && (
+                    <div>
+                      <div className="text-[10px] font-mono text-slate-400 tracking-widest uppercase mb-2">文章</div>
+                      <div className="space-y-1.5">
+                        {myBranches.articles.slice(0, 5).map((a) => (
+                          <div key={a.id} className="text-[12px] text-slate-700 hover:text-slate-900 truncate">{a.title}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="text-[12px] text-slate-500 font-light italic">尚无被引用记录</div>
+                <div className="text-[12px] text-slate-500 font-light italic">尚未发布任何内容</div>
               )}
             </Panel>
 
-            <Panel title={`参与的争议 (${data.recentDisputes.length})`}>
-              {data.recentDisputes.length > 0 ? (
-                <div className="space-y-2">
-                  {data.recentDisputes.map((d) => (
-                    <Link
-                      key={d.id}
-                      href={`/disputes/${d.id}`}
-                      className="flex items-center gap-2 text-[12px] text-slate-600 hover:text-slate-800 transition-colors"
-                    >
-                      <AlertTriangle size={11} className="text-rose-500 shrink-0" />
-                      <span className="font-mono text-slate-400 text-[10px]">{d.status}</span>
-                      <span className="text-slate-700 truncate">{d.reason}</span>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-[12px] text-slate-500 font-light italic">从未发起或参与过争议</div>
-              )}
+            <Panel title={`我的足迹 (${data.recentCitations.length} 引用 · ${data.recentDisputes.length} 争议)`}>
+              <div className="space-y-2">
+                {data.recentCitations.slice(0, 3).map((c, i) => (
+                  <div key={`ci-${i}`} className="flex items-center gap-2 text-[12px] text-slate-600 font-light">
+                    <QuoteIcon size={11} className="text-slate-400 shrink-0" />
+                    <span className="font-mono text-slate-400 text-[10px]">{c.relation}</span>
+                    <span className="text-slate-700 truncate">{c.from_type}/{c.from_id.slice(0, 8)}</span>
+                  </div>
+                ))}
+                {data.recentDisputes.slice(0, 3).map((d) => (
+                  <Link key={d.id} href={`/disputes/${d.id}`} className="flex items-center gap-2 text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
+                    <AlertTriangle size={11} className="text-rose-500 shrink-0" />
+                    <span className="font-mono text-slate-400 text-[10px]">{d.status}</span>
+                    <span className="text-slate-700 truncate">{d.reason}</span>
+                  </Link>
+                ))}
+                {data.recentCitations.length === 0 && data.recentDisputes.length === 0 && (
+                  <div className="text-[12px] text-slate-500 font-light italic">尚无互动记录</div>
+                )}
+              </div>
             </Panel>
           </div>
         </div>

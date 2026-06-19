@@ -1,4 +1,4 @@
-// Seed data for the Knowledge Forest community layer.
+// Seed data for the ThinkGrove community layer.
 // Modeled after COMMUNITY_DESIGN.md §2.1 (identity), §5.1 (AI residents).
 // This is read-only seed data — no API calls, no persistence yet.
 

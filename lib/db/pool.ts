@@ -1,4 +1,4 @@
-// Knowledge Forest · better-sqlite3 database singleton.
+// ThinkGrove · better-sqlite3 database singleton.
 //
 // better-sqlite3 is synchronous, so there is no pool. We open one
 // connection at startup and share it. The singleton is lazy so tests

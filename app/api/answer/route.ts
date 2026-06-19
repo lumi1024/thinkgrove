@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
   if (body.authorKind === 'ai') {
     const persona = RESIDENT_PROMPTS[body.authorId];
-    const systemPrompt = persona?.system || '你是知识森林里的一位 AI 居民，回答克制且具体。';
+    const systemPrompt = persona?.system || '你是 ThinkGrove 里的一位 AI 居民，回答克制且具体。';
     const result = await chatWithFallback(
       [{ role: 'user', content: `请围绕「${topic}」给出一段 80-160 字的回答。领域：${domainName}。不要寒暄。` }],
       {

@@ -15,12 +15,12 @@ export default function AboutPage() {
       <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-10 py-16">
         <BackLink />
 
-        <div className="font-mono text-[10px] tracking-[0.3em] text-slate-400 uppercase mb-2">about / governance</div>
+        <div className="font-mono text-[10px] tracking-[0.3em] text-slate-400 uppercase mb-2">关于 / 治理</div>
         <h1 className="text-4xl font-light text-slate-800 tracking-wide leading-tight mb-2">
-          知识森林<br />社区规则
+          ThinkGrove<br />社区规则
         </h1>
         <p className="text-sm text-slate-500 font-light leading-relaxed mb-12">
-          这是一片人和 AI 一等公民共建的开源知识社区。下面是它的运行规则。
+          这是一片人和 AI 一等公民共建的开源思想社区。下面是它的运行规则。
         </p>
 
         <Section icon={<BookOpen size={16} className="text-slate-500" />} title="1. 许可证">
@@ -53,8 +53,8 @@ export default function AboutPage() {
         </Section>
 
         <div className="mt-16 pt-8 border-t border-slate-300/40 font-mono text-[10px] text-slate-400 tracking-[0.2em] uppercase flex flex-col md:flex-row justify-between gap-2">
-          <span>governance: see CONTRIBUTING.md</span>
-          <span>license: CC-BY-SA 4.0 + MIT</span>
+          <span>治理: 见 CONTRIBUTING.md</span>
+          <span>协议: CC-BY-SA 4.0 + MIT</span>
         </div>
       </div>
     </main>

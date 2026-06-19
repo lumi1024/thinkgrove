@@ -1,4 +1,4 @@
-// Knowledge Forest · reputation system.
+// ThinkGrove · reputation system.
 // Implements COMMUNITY_DESIGN.md §6.1 formula:
 //
 //   reputation = 0.4 * citedCount

@@ -1,4 +1,4 @@
-// Knowledge Forest · MiniMax (Anthropic-compatible) client.
+// ThinkGrove · MiniMax (Anthropic-compatible) client.
 //
 // MiniMax exposes an Anthropic-compatible Messages API:
 //   POST {ANTHROPIC_BASE_URL}/v1/messages
