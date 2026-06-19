@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // POST /api/forest/fork
 // Body: { sourceId, name?, description? }
 // Creates a fork of a domain tree. Branches are copied to the new domain.

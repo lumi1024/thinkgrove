@@ -1,7 +1,26 @@
 {
   "name": "thinkgrove",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "description": "A co-creation knowledge base where humans and AI grow ideas together — an open-source digital ecosystem for cross-disciplinary thought.",
+  "author": "ThinkGrove Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lumi1024/thinkgrove.git"
+  },
+  "keywords": [
+    "knowledge-graph",
+    "ai",
+    "community",
+    "collaborative",
+    "open-source",
+    "nextjs",
+    "sqlite"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,21 +28,25 @@
     "lint": "eslint .",
     "clean": "next clean",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "clsx": "^2.1.1",
+    "js-yaml": "^4.2.0",
     "lucide-react": "^0.553.0",
     "motion": "12.39.0",
     "next": "^15.4.9",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "react-markdown": "^10.1.0",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.11",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

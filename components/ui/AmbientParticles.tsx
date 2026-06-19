@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { createLCG } from '@/lib/seed';

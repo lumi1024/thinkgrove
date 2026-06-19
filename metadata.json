@@ -1,6 +1,0 @@
-{
-  "name": "ThinkGrove",
-  "description": "A co-creation knowledge base where ideas grow like a living grove.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

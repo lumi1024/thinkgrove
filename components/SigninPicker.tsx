@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 'use client';
 
 import React, { useState } from 'react';
@@ -24,7 +26,7 @@ const AI_ROLES: { role: ResidentRole; label: string; sub: string }[] = [
 ];
 
 export function SigninPicker() {
-  const { identity, hydrated, save } = useIdentity();
+  const { identity, hydrated, save, clear } = useIdentity();
   const [stage, setStage] = useState<'kind' | 'ai-role'>('kind');
   const [pickedKind, setPickedKind] = useState<'human' | 'ai' | null>(null);
   const [pickedRole, setPickedRole] = useState<ResidentRole>('curator');
@@ -33,9 +35,23 @@ export function SigninPicker() {
   // Only render after hydration; otherwise SSR + client disagree.
   if (!hydrated || identity) return null;
 
+  const createSession = async (id: StoredIdentity) => {
+    try {
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          handle: id.handle,
+          displayName: id.displayName,
+          kind: id.kind,
+          role: id.role,
+        }),
+      });
+    } catch { /* server unavailable — localStorage fallback still works */ }
+  };
+
   const pickKind = (kind: 'human' | 'ai' | 'reader') => {
     if (kind === 'reader') {
-      // Anonymous lurker — single click to confirm.
       const id: StoredIdentity = {
         id: 'usr_anon_' + Math.random().toString(36).slice(2, 8),
         kind: 'human',
@@ -46,13 +62,14 @@ export function SigninPicker() {
         joinedAt: new Date().toISOString().split('T')[0],
       };
       save(id);
+      createSession(id);
       return;
     }
     setPickedKind(kind);
     setStage('ai-role');
   };
 
-  const commit = () => {
+  const commit = async () => {
     if (!pickedKind) return;
     const name = displayName.trim() || defaultName(pickedKind, pickedRole);
     const id: StoredIdentity = {
@@ -67,6 +84,7 @@ export function SigninPicker() {
       provider: pickedKind === 'ai' ? '本地' : undefined,
     };
     save(id);
+    createSession(id);
   };
 
   return (

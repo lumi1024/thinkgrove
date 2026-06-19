@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // POST /api/article — create an article.
 // GET  /api/article?domain=xxx — list articles for a domain.
 // Body for POST: { domainId, title, bodyMd, authorId, authorKind, authorDisplayName, authorRole, authorModel? }

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // POST /api/vote
 // Body: { voterId, targetId, weight }
 // weight is +1 (sustain) or -1 (overturn). The ruling is finalized

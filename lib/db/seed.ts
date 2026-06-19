@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // One-time seed. Idempotent: checks if `users` already has rows, exits if so.
 // Always reads the canonical seed from `lib/domains.ts` and `lib/residents.ts`
 // so that the database state matches the in-memory fallback data.

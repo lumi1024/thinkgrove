@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 'use client';
 
 import { WelcomeOverlay } from '@/components/GuideOverlay';

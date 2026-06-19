@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 'use client';
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';

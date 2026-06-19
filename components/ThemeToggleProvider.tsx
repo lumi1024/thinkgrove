@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 'use client';
 
 import { ThemeToggle } from '@/components/ThemeToggle';

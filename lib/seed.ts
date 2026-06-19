@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Seeded linear congruential generator (LCG).
 // Algorithm: state.seed = (state.seed * 1664525 + 1013904223) % 2^32
 // Returns a value in [0, 1).

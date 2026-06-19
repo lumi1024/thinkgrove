@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // POST /api/dispute
 // Body: { targetType, targetId, reason, openedBy, openedByDisplayName, openedByRole, openedByKind }
 // On creation, auto-picks 3 human + 2 AI arbitrators (3+2) and seeds

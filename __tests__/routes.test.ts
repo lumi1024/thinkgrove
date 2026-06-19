@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
@@ -44,10 +46,13 @@ vi.mock('@/lib/domains', () => ({
   domains: [{ id: 'ai', domain: 'AI', color: '#0ea5e9', description: 'Models', x: '5%', y: '5%' }],
 }));
 
-// Mock AI client — tests should not make real network calls.
-vi.mock('@/lib/ai/minimax', () => ({
-  chatWithFallback: vi.fn(() => Promise.resolve({ text: 'mock q?', model: 'mock', promptHash: 'ph_test', fallback: true })),
-  AIClientError: class extends Error { constructor(m: string, c?: unknown) { super(m); this.cause = c; } },
+// Mock AI provider — tests should not make real network calls.
+const mockChatResult = { text: 'mock q?', model: 'mock', promptHash: 'ph_test', fallback: true };
+vi.mock('@/lib/ai/provider', () => ({
+  resolveProvider: () => ({
+    chat: vi.fn(() => Promise.resolve(mockChatResult)),
+  }),
+  hashPrompt: vi.fn(() => 'ph_test'),
 }));
 
 import { POST as postBranch } from '@/app/api/branch/route';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 'use client';
 
 const SEEN_KEY = 'kf.guide.seen';

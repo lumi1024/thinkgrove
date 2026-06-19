@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // POST /api/branch
 // Body: { domainId, title, kind?, parentBranchId?, authorId, authorKind, bodyMd? }
 // Creates a new branch in the database. The client is expected to have

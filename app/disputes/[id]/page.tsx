@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 'use client';
 
 import React, { useEffect, useState, use, Suspense } from 'react';
@@ -8,6 +10,7 @@ import { ArrowLeft, Gavel, Check, X, ShieldCheck, Bot, User as UserIcon, Shield,
 import { IdentityChip } from '@/components/IdentityChip';
 import { RoleBadge } from '@/components/RoleBadge';
 import { BackgroundGrid } from '@/components/ui/BackgroundGrid';
+import { MarkdownBody } from '@/components/MarkdownBody';
 import { Panel } from '@/components/ui/Panel';
 import { BackLink } from '@/components/ui/BackLink';
 import { DisputeStamp } from '@/components/DisputeStamp';
@@ -120,9 +123,7 @@ function DisputeContent({ id }: { id: string }) {
               <div className="absolute -top-2 -right-2 z-10">
                 <DisputeStamp size={56} />
               </div>
-              <div className="text-sm text-slate-700 font-light leading-relaxed whitespace-pre-wrap pr-8">
-                {data.reason}
-              </div>
+              <MarkdownBody content={data.reason} className="text-sm text-slate-700 font-light leading-relaxed pr-8" />
               <div className="mt-4 text-[10px] font-mono text-slate-400 tracking-widest uppercase flex items-center gap-2">
                 <span>目标:</span>
                 <span className="text-slate-600">{data.targetType}/{data.targetId}</span>

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Synchronous typed wrappers around better-sqlite3 for each domain table.
 //
 // better-sqlite3 is synchronous — no async, no pool, no connection release.

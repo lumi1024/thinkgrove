@@ -1,7 +1,44 @@
+# Dependencies
 node_modules/
+
+# Next.js
 .next/
+out/
+
+# Coverage
 coverage/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Logs
 *.log
+npm-debug.log*
+
+# Environment
 .env*
 !.env.example
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Native addon builds
+build/Release/*.node
+
+# Claude Code local settings (user-specific)
+.claude/
+
+# Misc
+*.pem

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // POST /api/ai/awaken
 // Body: { agentId, domainId }
 // Wakes an AI resident to a specific tree. The agent generates one
@@ -15,7 +17,7 @@ import {
   bumpAgentAction,
   setAgentRest,
 } from '@/lib/db/repos';
-import { chatWithFallback } from '@/lib/ai/minimax';
+import { resolveProvider, hashPrompt } from '@/lib/ai/provider';
 import { RESIDENT_PROMPTS, mockAwakenQuestion } from '@/lib/ai/prompts';
 import { aiResidents } from '@/lib/residents';
 import { domains as FALLBACK_DOMAINS } from '@/lib/domains';
@@ -51,6 +53,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'domain not found' }, { status: 404 });
   }
 
+  let awakenBodyMd: string;
+  let promptHash: string | null = null;
+  let aiGenerated = false;
+
   try {
     ensureInit();
 
@@ -69,20 +75,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: `${agent.displayName} 今日配额已用完` }, { status: 429 });
     }
 
-    // Generate the awakening question via MiniMax with mock fallback.
     const persona = RESIDENT_PROMPTS[body.agentId];
     const systemPrompt = persona?.system || '你是 ThinkGrove 里的一位 AI 居民。';
-    const result = await chatWithFallback(
-      [{
-        role: 'user',
-        content: `${domain.domain} 域已经 24 小时没有新枝桠。请提出一个具体、开放、可能引发讨论的问题，30-80 字，不要寒暄。`,
-      }],
-      {
-        system: systemPrompt,
-        maxTokens: 200,
-        fallbackText: mockAwakenQuestion(domain.domain, body.agentId),
-      },
-    );
+
+    const provider = resolveProvider();
+    try {
+      const result = await provider.chat(
+        [{
+          role: 'user',
+          content: `${domain.domain} 域已经 24 小时没有新枝桠。请提出一个具体、开放、可能引发讨论的问题，30-80 字，不要寒暄。`,
+        }],
+        { system: systemPrompt, maxTokens: 200 },
+      );
+      awakenBodyMd = result.text;
+      promptHash = result.promptHash;
+      aiGenerated = true;
+    } catch (e) {
+      awakenBodyMd = mockAwakenQuestion(domain.domain, body.agentId) || `关于「${domain.domain}」域的问题：当前讨论中最常被引用的"标准答案"是否真的成立？有没有一个反例能动摇它的根基？`;
+      promptHash = 'mock-fallback';
+    }
 
     // Persist user + branch.
     upsertUser(makeUser({
@@ -101,11 +112,11 @@ export async function POST(req: Request) {
       id: branchId,
       domain_id: body.domainId,
       parent_branch_id: null,
-      title: result.text.slice(0, 120),
+      title: awakenBodyMd.slice(0, 120),
       kind: 'question',
       created_by: agent.id,
       created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      body_md: result.text,
+      body_md: awakenBodyMd,
     });
 
     // Bump counter; force 6h REST every 7 actions.
@@ -115,7 +126,7 @@ export async function POST(req: Request) {
       setAgentRest(body.agentId, restUntil);
     }
 
-    return NextResponse.json({ id: branchId, ok: true, title: result.text.slice(0, 120), fallback: result.fallback });
+    return NextResponse.json({ id: branchId, ok: true, title: awakenBodyMd.slice(0, 120), fallback: promptHash === 'mock-fallback' });
   } catch (e) {
     // eslint-disable-next-line no-console
     console.warn('[api/ai/awaken] DB unavailable:', (e as Error).message);

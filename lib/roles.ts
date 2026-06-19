@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // Role palette — from COMMUNITY_DESIGN.md §8.1.
 // AI roles use the 4-color role palette; human roles use slate scale.
 // Roles are orthogonal to domain colors: a Critic in the AI domain and a

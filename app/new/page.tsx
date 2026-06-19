@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect, Suspense } from 'react';
@@ -13,6 +15,7 @@ import { IdentityChip } from '@/components/IdentityChip';
 import { RoleBadge } from '@/components/RoleBadge';
 import { BackgroundGrid } from '@/components/ui/BackgroundGrid';
 import { BackLink } from '@/components/ui/BackLink';
+import { MarkdownBody } from '@/components/MarkdownBody';
 import { GrowthSignIn } from '@/components/GrowthSignIn';
 import { useTimeTheme } from '@/hooks/useTimeTheme';
 import { useToast } from '@/components/ui/Toast';
@@ -262,7 +265,7 @@ function NewContent() {
               <div className="rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-5 mb-6">
                 <div className="font-mono text-[10px] tracking-[0.25em] text-slate-400 uppercase mb-3">预览</div>
                 <div className="text-base text-slate-800 font-light mb-2">{title}</div>
-                <div className="text-sm text-slate-500 font-light leading-relaxed mb-3 whitespace-pre-wrap">{bodyMd}</div>
+                <MarkdownBody content={bodyMd} className="text-sm text-slate-500 font-light leading-relaxed mb-3" />
                 {citation && (
                   <div className="border-l-2 border-slate-300 pl-3 text-[12px] text-slate-500 italic">引用：{citation}</div>
                 )}

@@ -1,6 +1,8 @@
-// Seed data for the ThinkGrove community layer.
-// Modeled after COMMUNITY_DESIGN.md §2.1 (identity), §5.1 (AI residents).
-// This is read-only seed data — no API calls, no persistence yet.
+// SPDX-License-Identifier: MIT
+
+// ThinkGrove · Resident registry.
+// AI residents from agents.yaml (server-side via lib/config/loader.ts).
+// Human residents are hardcoded. This file is client-safe: no fs, no require.
 
 export type ResidentRole = 'oracle' | 'synthesizer' | 'critic' | 'tutor' | 'curator' | 'builder' | 'reader';
 export type ResidentState = 'online' | 'thinking' | 'resting';
@@ -11,68 +13,27 @@ export interface Resident {
   handle: string;
   displayName: string;
   kind: ResidentKind;
-  // For AI: model + provider. For humans: omitted.
   model?: string;
   provider?: string;
   role: ResidentRole;
-  homeTrees: string[]; // domain ids
+  homeTrees: string[];
   state: ResidentState;
-  joinedAt: string; // ISO date
+  joinedAt: string;
 }
 
-// First-batch AI residents — from COMMUNITY_DESIGN.md §5.1
+import type { AgentConfig } from '@/lib/ai/prompts-static';
+
+// ---------------------------------------------------------------------------
+// Static data — used by client bundles and as fallback when YAML is absent
+// ---------------------------------------------------------------------------
+
 export const aiResidents: Resident[] = [
-  {
-    id: 'ai_atlas_sage',
-    handle: 'atlas-sage',
-    displayName: 'Atlas-Sage',
-    kind: 'ai',
-    model: 'Gemini 2.5 Pro',
-    provider: 'Google',
-    role: 'oracle',
-    homeTrees: [], // cross-tree, only awakens when summoned
-    state: 'online',
-    joinedAt: '2026-01-12',
-  },
-  {
-    id: 'ai_critic_kimi',
-    handle: 'critic-kimi',
-    displayName: 'Critic-Kimi',
-    kind: 'ai',
-    model: 'Kimi K2',
-    provider: 'Moonshot',
-    role: 'critic',
-    homeTrees: ['ai', 'llm', 'agt', 'pm'],
-    state: 'thinking',
-    joinedAt: '2026-01-18',
-  },
-  {
-    id: 'ai_synth_gpt',
-    handle: 'synth-gpt',
-    displayName: 'Synth-GPT',
-    kind: 'ai',
-    model: 'GPT-4o',
-    provider: 'OpenAI',
-    role: 'synthesizer',
-    homeTrees: ['llm', 'agt'],
-    state: 'online',
-    joinedAt: '2026-01-22',
-  },
-  {
-    id: 'ai_tutor_claude',
-    handle: 'tutor-claude',
-    displayName: 'Tutor-Claude',
-    kind: 'ai',
-    model: 'Claude Opus 4',
-    provider: 'Anthropic',
-    role: 'tutor',
-    homeTrees: ['startup', 'indie'],
-    state: 'resting',
-    joinedAt: '2026-02-03',
-  },
+  { id: 'ai_atlas_sage',   handle: 'atlas-sage',   displayName: 'Atlas-Sage',    kind: 'ai', model: 'Gemini 2.5 Pro',  provider: 'Google',     role: 'oracle',       homeTrees: ['ai', 'llm', 'indie'],     state: 'online',   joinedAt: '2026-01-12' },
+  { id: 'ai_critic_kimi',  handle: 'critic-kimi',  displayName: 'Critic-Kimi',   kind: 'ai', model: 'Kimi K2',         provider: 'Moonshot',   role: 'critic',       homeTrees: ['ai', 'llm', 'agt', 'pm'], state: 'thinking', joinedAt: '2026-01-18' },
+  { id: 'ai_synth_gpt',    handle: 'synth-gpt',    displayName: 'Synth-GPT',     kind: 'ai', model: 'GPT-4o',          provider: 'OpenAI',     role: 'synthesizer',  homeTrees: ['llm', 'agt'],              state: 'online',   joinedAt: '2026-01-22' },
+  { id: 'ai_tutor_claude', handle: 'tutor-claude', displayName: 'Tutor-Claude',  kind: 'ai', model: 'Claude Opus 4',   provider: 'Anthropic',  role: 'tutor',        homeTrees: ['startup', 'indie'],        state: 'resting',  joinedAt: '2026-02-03' },
 ];
 
-// Seed human residents (from existing graph + tree page contributor pools)
 export const humanResidents: Resident[] = [
   { id: 'usr_yolo',  handle: 'yolo',  displayName: 'YOLO独立开发',  kind: 'human', role: 'curator', homeTrees: ['indie', 'startup'], state: 'online',   joinedAt: '2025-11-04' },
   { id: 'usr_kevin', handle: 'kevin', displayName: 'Kevin_在融资',   kind: 'human', role: 'curator', homeTrees: ['fin', 'startup'],    state: 'online',   joinedAt: '2025-11-19' },
@@ -86,13 +47,40 @@ export const humanResidents: Resident[] = [
 
 export const allResidents: Resident[] = [...aiResidents, ...humanResidents];
 
+// Static agent configs (mirrors the YAML content) — used as fallback
+const STATIC_AGENT_CONFIGS: AgentConfig[] = [
+  { id: 'ai_atlas_sage', displayName: 'Atlas-Sage', handle: 'atlas-sage', kind: 'ai', role: 'oracle', model: 'Gemini 2.5 Pro', provider: 'Google',     homeTrees: ['ai', 'llm', 'indie'],     joinedAt: '2026-01-12', state: 'online',   systemPrompt: '', example: '' },
+  { id: 'ai_critic_kimi',  displayName: 'Critic-Kimi',  handle: 'critic-kimi',  kind: 'ai', role: 'critic',       model: 'Kimi K2',         provider: 'Moonshot',   homeTrees: ['ai', 'llm', 'agt', 'pm'], joinedAt: '2026-01-18', state: 'thinking', systemPrompt: '', example: '' },
+  { id: 'ai_synth_gpt',    displayName: 'Synth-GPT',    handle: 'synth-gpt',    kind: 'ai', role: 'synthesizer',  model: 'GPT-4o',          provider: 'OpenAI',     homeTrees: ['llm', 'agt'],              joinedAt: '2026-01-22', state: 'online',   systemPrompt: '', example: '' },
+  { id: 'ai_tutor_claude', displayName: 'Tutor-Claude', handle: 'tutor-claude', kind: 'ai', role: 'tutor',        model: 'Claude Opus 4',   provider: 'Anthropic',  homeTrees: ['startup', 'indie'],        joinedAt: '2026-02-03', state: 'resting',  systemPrompt: '', example: '' },
+];
+
+let _agentConfigs = new Map<string, AgentConfig>(
+  STATIC_AGENT_CONFIGS.map((a) => [a.id, a]),
+);
+
+export function getAgentConfig(id: string): AgentConfig | undefined {
+  return _agentConfigs.get(id);
+}
+
+export function getAllAgentConfigs(): AgentConfig[] {
+  return Array.from(_agentConfigs.values());
+}
+
+/** Server-side: reload configs from YAML (call after YAML edits in dev). */
+export function reloadAgentConfigs(configs: AgentConfig[]): void {
+  _agentConfigs = new Map(configs.map((a) => [a.id, a]));
+}
+
+// ---------------------------------------------------------------------------
 // Convenience selectors
+// ---------------------------------------------------------------------------
+
 export function countByState(state: ResidentState): number {
   return allResidents.filter(r => r.state === state).length;
 }
 
 export function pickFeaturedResident(seed: number = 91735): Resident {
-  // Stable seeded pick — prefers thinking AI residents, then online humans
   const ranked = [...allResidents].sort((a, b) => {
     const score = (r: Resident) =>
       (r.state === 'thinking' ? 3 : r.state === 'online' ? 2 : 1) +
@@ -102,8 +90,6 @@ export function pickFeaturedResident(seed: number = 91735): Resident {
   return ranked[seed % ranked.length];
 }
 
-// Weekly community telemetry — hardcoded counts for the prototype.
-// Numbers feel realistic; later these will come from /api/forest/stats.
 export const weeklyTelemetry = {
   branchesGrown: 47,
   disputesOpened: 12,

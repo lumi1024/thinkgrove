@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 export default function Loading() {
   return (
     <div className="flex w-full h-screen items-center justify-center bg-[var(--theme-bg)]">

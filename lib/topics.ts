@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 export const topics: Record<string, string[]> = {
   'AI':          ['GPT-5', 'Claude', 'Gemini', 'DeepSeek', '开源模型', 'MoE', '推理模型', '多模态', '语音AI', '小模型'],
   'LLM':         ['RAG', 'Prompt工程', 'Fine-tune', '上下文窗口', '工具调用', 'Embedding', '幻觉控制', '评估基准', 'Agent框架', '成本优化'],

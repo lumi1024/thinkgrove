@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // GET /api/inbox
 // Returns inbox columns for the current user: cited, disputed, invited.
 // Falls back to empty arrays on DB failure.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // GET /api/u/[handle]
 // Returns the user profile aggregate: identity, reputation components,
 // recent contributions, recent disputes.

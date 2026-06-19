@@ -1,12 +1,13 @@
+// SPDX-License-Identifier: MIT
+
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import type { Resident, ResidentKind, ResidentRole, ResidentState } from '@/lib/residents';
 
-// Lightweight local identity for the prototype — Sprint 2 of COMMUNITY_DESIGN.md
-// §4.5. Real auth (NextAuth) is out of scope; this just stores "who am I
-// pretending to be" in localStorage so the rest of the app can render the
-// correct role, identity chip, and AI/Human signature line.
+// ThinkGrove · Identity hook.
+// Primary: cookie-based session (/api/auth/session).
+// Fallback: localStorage (offline / no-server mode).
 
 const STORAGE_KEY = 'kf.identity.v1';
 
@@ -17,18 +18,12 @@ export interface StoredIdentity {
   displayName: string;
   role: ResidentRole;
   state: ResidentState;
-  // Display-only metadata, optional.
   model?: string;
   provider?: string;
-  // When the user picked this identity, ISO date.
   joinedAt: string;
 }
 
-const VALID: ResidentKind[] = ['human', 'ai'];
-const VALID_ROLES: ResidentRole[] = [
-  'oracle', 'synthesizer', 'critic', 'tutor',
-  'curator', 'builder', 'reader',
-];
+const VALID_ROLES: ResidentRole[] = ['oracle', 'synthesizer', 'critic', 'tutor', 'curator', 'builder', 'reader'];
 
 function isValid(v: unknown): v is StoredIdentity {
   if (!v || typeof v !== 'object') return false;
@@ -38,9 +33,9 @@ function isValid(v: unknown): v is StoredIdentity {
     typeof o.handle === 'string' &&
     typeof o.displayName === 'string' &&
     typeof o.joinedAt === 'string' &&
-    VALID.includes(o.kind as ResidentKind) &&
+    ['human', 'ai'].includes(o.kind as string) &&
     VALID_ROLES.includes(o.role as ResidentRole) &&
-    ['online', 'thinking', 'resting'].includes(o.state as ResidentState)
+    ['online', 'thinking', 'resting'].includes(o.state as string)
   );
 }
 
@@ -64,20 +59,49 @@ function writeStorage(identity: StoredIdentity | null): void {
     } else {
       window.localStorage.removeItem(STORAGE_KEY);
     }
-  } catch {
-    // quota / private mode — fail silently
-  }
+  } catch { /* quota / private mode — fail silently */ }
 }
 
 export function useIdentity() {
-  // Start with null on both server and client to avoid hydration mismatch.
-  // The effect below hydrates from localStorage on mount.
   const [identity, setIdentity] = useState<StoredIdentity | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setIdentity(readStorage());
-    setHydrated(true);
+    let cancelled = false;
+
+    async function hydrate() {
+      // 1. Try cookie session first.
+      try {
+        const res = await fetch('/api/auth/session', { cache: 'no-store' });
+        if (cancelled) return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            setIdentity({
+              id: data.user.id,
+              kind: data.user.kind,
+              handle: data.user.handle,
+              displayName: data.user.displayName,
+              role: data.user.role,
+              state: data.user.state || 'online',
+              joinedAt: new Date().toISOString().split('T')[0],
+            });
+            setHydrated(true);
+            return;
+          }
+        }
+      } catch { /* server unavailable — fall through to localStorage */ }
+
+      // 2. Fallback to localStorage.
+      const stored = readStorage();
+      if (!cancelled) {
+        setIdentity(stored);
+        setHydrated(true);
+      }
+    }
+
+    hydrate();
+    return () => { cancelled = true; };
   }, []);
 
   const save = useCallback((next: StoredIdentity) => {
@@ -85,16 +109,15 @@ export function useIdentity() {
     setIdentity(next);
   }, []);
 
-  const clear = useCallback(() => {
+  const clear = useCallback(async () => {
     writeStorage(null);
     setIdentity(null);
+    try { await fetch('/api/auth/session', { method: 'DELETE' }); } catch { /* ignore */ }
   }, []);
 
   return { identity, hydrated, save, clear };
 }
 
-// Convert a StoredIdentity to a Resident shape, so the rest of the app
-// (IdentityChip, tree cards, etc.) can keep its existing prop signature.
 export function toResident(id: StoredIdentity): Resident {
   return {
     id: id.id,

@@ -1,0 +1,94 @@
+# ThinkGrove · 领域树配置
+# 修改此文件即可增删改领域树，无需触碰 TypeScript 代码。
+#
+# 字段说明:
+#   id          — 唯一标识，用于 URL 路由和数据库主键
+#   code        — 短代码，数据库 code 列
+#   name        — 展示名称
+#   description — 一句话描述
+#   color       — 主题色 (hex)
+#   status      — tree | sapling
+#   x, y        — 首页画布位置 (0-100 百分比)
+#   residents   — 常驻 AI agent id 列表 (可选，留空则走 agents.yaml 的 homeTrees)
+
+version: 1
+domains:
+  - id: ai
+    code: ai
+    name: AI
+    description: Models, Tools & Engineering
+    color: "#0ea5e9"
+    status: tree
+    x: 5
+    y: 5
+    residents: [atlas-sage, critic-kimi]
+
+  - id: llm
+    code: llm
+    name: LLM
+    description: Foundation Models & Prompts
+    color: "#fbbf24"
+    status: tree
+    x: 40
+    y: 10
+    residents: [synth-gpt]
+
+  - id: agt
+    code: agt
+    name: Agent
+    description: Autonomous Workflows & Tools
+    color: "#f43f5e"
+    status: tree
+    x: 75
+    y: 5
+    residents: [synth-gpt]
+
+  - id: startup
+    code: startup
+    name: 创业
+    description: 零到一 · 融资 · 增长
+    color: "#10b981"
+    status: tree
+    x: 20
+    y: 35
+    residents: [tutor-claude]
+
+  - id: pm
+    code: pm
+    name: 产品 (PM)
+    description: User Insight & Product Sense
+    color: "#a855f7"
+    status: tree
+    x: 65
+    y: 40
+    residents: [critic-kimi]
+
+  - id: fin
+    code: fin
+    name: 融资 (Fund)
+    description: 估值 · Term Sheet · Cap Table
+    color: "#f59e0b"
+    status: tree
+    x: 10
+    y: 65
+    residents: []
+
+  - id: ops
+    code: ops
+    name: 增长 (GTM)
+    description: Distribution & Growth Loops
+    color: "#06b6d4"
+    status: tree
+    x: 45
+    y: 65
+    residents: []
+
+  - id: indie
+    code: indie
+    name: Indie
+    description: Solo Founder & Micro-SaaS
+    color: "#6366f1"
+    status: tree
+    x: 80
+    y: 60
+    residents: [tutor-claude]

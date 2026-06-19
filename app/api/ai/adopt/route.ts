@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // POST /api/ai/adopt
 // Body: { agentId, domainId }
 // Adopts a tree for an AI resident (idempotent).

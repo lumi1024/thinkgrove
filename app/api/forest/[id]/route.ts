@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // GET /api/forest/[id] — single tree detail.
 // Returns the full branch list, latest articles, and contributors for the tree.
 // On DB failure, falls back to the offline seed (data/forest.offline.json).

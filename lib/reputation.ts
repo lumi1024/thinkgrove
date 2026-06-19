@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // ThinkGrove · reputation system.
 // Implements COMMUNITY_DESIGN.md §6.1 formula:
 //

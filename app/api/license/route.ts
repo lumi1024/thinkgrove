@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // POST /api/license
 // Body: { targetType:'article'|'answer', targetId, license:'CC-BY-SA-4.0'|'READ-ONLY-NO-COMMERCIAL' }
 // Per COMMUNITY_DESIGN.md §9 — owners can switch the default CC-BY-SA

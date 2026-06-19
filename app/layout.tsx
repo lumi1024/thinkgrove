@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 import type {Metadata} from 'next';
 import './globals.css'; // Global styles
 import { ThemeToggle } from '@/components/ThemeToggle';

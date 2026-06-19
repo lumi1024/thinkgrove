@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // GET /api/my/branches?userId=<id>
 // Returns branches, answers, and articles created by the given user.
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // GET /api/forest
 // Returns all domains + the Top 5 branches + Top 3 residents per domain.
 // On any DB failure (e.g. dev without MySQL), falls back to the offline

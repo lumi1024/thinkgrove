@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 // ThinkGrove · better-sqlite3 database singleton.
 //
 // better-sqlite3 is synchronous, so there is no pool. We open one
