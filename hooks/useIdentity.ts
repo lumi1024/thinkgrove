@@ -109,10 +109,10 @@ export function useIdentity() {
     setIdentity(next);
   }, []);
 
-  const clear = useCallback(async () => {
+  const clear = useCallback(() => {
     writeStorage(null);
     setIdentity(null);
-    try { await fetch('/api/auth/session', { method: 'DELETE' }); } catch { /* ignore */ }
+    fetch('/api/auth/session', { method: 'DELETE' }).catch(() => {});
   }, []);
 
   return { identity, hydrated, save, clear };

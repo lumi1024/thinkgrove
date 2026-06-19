@@ -18,7 +18,7 @@ export function seedIfEmpty(): boolean {
     'INSERT OR IGNORE INTO domains (id, code, name, color, description, status, x_pct, y_pct) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
   );
   for (const d of DOMAINS) {
-    insertDomain.run(d.id, d.id, d.domain, d.color, d.description, 'tree', d.x, d.y);
+    insertDomain.run(d.id, d.id, d.domain, d.color, d.description, 'tree', d.x_pct, d.y_pct);
   }
 
   // AI residents

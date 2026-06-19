@@ -17,7 +17,10 @@ const buildBody: BuildBodyFn = ({ model, maxTokens, temperature, system, message
   max_tokens: maxTokens,
   temperature,
   system: system || undefined,
-  messages: messages.map((m) => ({ role: m.role, content: m.content })),
+  messages: messages.map((m) => ({
+    role: m.role,
+    content: [{ type: 'text' as const, text: m.content }],
+  })),
 });
 
 const parseResponse: ParseResponseFn = (data) => {

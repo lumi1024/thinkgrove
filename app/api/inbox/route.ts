@@ -55,6 +55,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ cited, disputed, invited: [] });
   } catch {
+    console.warn('[api/inbox] DB unavailable');
     return NextResponse.json({ cited: [], disputed: [], invited: [] });
   }
 }

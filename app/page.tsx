@@ -62,7 +62,7 @@ export default function Home() {
   useEffect(() => { loadBranches(); }, [loadBranches]);
 
   useEffect(() => {
-    const channel = new BroadcastChannel('kf:branch-created');
+    const channel = new BroadcastChannel('kf.branch-created');
     const handler = (e: MessageEvent) => {
       const { title } = e.data || {};
       if (title) {
@@ -150,8 +150,8 @@ export default function Home() {
             key={d.id}
             className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
             style={{
-              left: `calc(5% + ${d.x})`,
-              top: `calc(5% + ${d.y})`,
+              left: `calc(5% + ${d.x_pct})`,
+              top: `calc(5% + ${d.y_pct})`,
             }}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

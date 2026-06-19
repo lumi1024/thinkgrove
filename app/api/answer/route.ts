@@ -8,9 +8,9 @@
 import { NextResponse } from 'next/server';
 import { ensureInit } from '@/lib/db/init';
 import { createAnswer, getBranch, makeUser, upsertUser } from '@/lib/db/repos';
-import { resolveProvider, hashPrompt } from '@/lib/ai/provider';
+import { resolveProvider } from '@/lib/ai/provider';
 import { domains as FALLBACK_DOMAINS } from '@/lib/domains';
-import { RESIDENT_PROMPTS } from '@/lib/ai/prompts';
+import { RESIDENT_PROMPTS, mockAnswer } from '@/lib/ai/prompts';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,7 +60,8 @@ export async function POST(req: Request) {
       aiGenerated = true;
     } catch (e) {
       // Provider failed — use a generic fallback
-      finalBody = `关于「${topic}」的一个未充分讨论的视角：在 ${domainName} 的多数讨论里，结论是"该用 A 不用 B"，但 A 的失败成本从未被量化。建议先量 3 个真实案例的失败成本，再回到"该用 A 不用 B"。`;
+      finalBody = mockAnswer(body.authorId, topic, domainName) ||
+        `关于「${topic}」的一个未充分讨论的视角：在 ${domainName} 的多数讨论里，结论是"该用 A 不用 B"，但 A 的失败成本从未被量化。建议先量 3 个真实案例的失败成本，再回到"该用 A 不用 B"。`;
       promptHash = 'mock-fallback';
       aiGenerated = true;
       console.warn('[api/answer] AI provider failed, using generic fallback:', (e as Error).message);

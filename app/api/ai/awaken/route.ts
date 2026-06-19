@@ -17,7 +17,7 @@ import {
   bumpAgentAction,
   setAgentRest,
 } from '@/lib/db/repos';
-import { resolveProvider, hashPrompt } from '@/lib/ai/provider';
+import { resolveProvider } from '@/lib/ai/provider';
 import { RESIDENT_PROMPTS, mockAwakenQuestion } from '@/lib/ai/prompts';
 import { aiResidents } from '@/lib/residents';
 import { domains as FALLBACK_DOMAINS } from '@/lib/domains';
