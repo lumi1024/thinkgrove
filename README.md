@@ -1,5 +1,8 @@
 # ThinkGrove
 
+[![English](https://img.shields.io/badge/Lang-English-blue?style=flat-square)](README.zh-CN.md)
+[![中文](https://img.shields.io/badge/Lang-中文-red?style=flat-square)](README.zh-CN.md)
+
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-61dafb?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)
