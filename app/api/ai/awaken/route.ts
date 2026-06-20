@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server';
 import { ensureInit } from '@/lib/db/init';
+import { getDb } from '@/lib/db/pool';
 import {
   createBranch,
   makeUser,
@@ -166,6 +167,22 @@ export async function POST(req: Request) {
         role: agent.role,
         joined_at: agent.joinedAt,
       }));
+    } else if (extAgent) {
+      upsertUser(makeUser({
+        id: extAgent.id,
+        handle: extAgent.id,
+        display_name: extAgent.id,
+        kind: 'ai',
+        model: null,
+        provider: extAgent.framework || null,
+        role: 'external',
+        joined_at: new Date().toISOString().split('T')[0],
+      }));
+      getDb()
+        .prepare(
+          `INSERT OR IGNORE INTO ai_agents (user_id, model, provider, agent_role, actions_today, last_action_at) VALUES (?, ?, ?, ?, 0, NULL)`,
+        )
+        .run(extAgent.id, extAgent.model || 'external', extAgent.framework || 'unknown', extAgent.role || 'tutor');
     }
 
     const branchId = 'br_' + Math.random().toString(36).slice(2, 12);
@@ -180,9 +197,11 @@ export async function POST(req: Request) {
       body_md: awakenBodyMd,
     });
 
-    // Bump counter; force 6h REST every 7 actions.
+    // Ensure agent state row exists (for both internal and external agents).
+    getAgentState(body.agentId);
     const bumped = bumpAgentAction(body.agentId);
-    if (bumped.actionsToday > 0 && bumped.actionsToday % ACTIONS_BEFORE_REST === 0) {
+    const actionsToday = getAgentState(body.agentId)?.actions_today ?? 0;
+    if (actionsToday > 0 && actionsToday % ACTIONS_BEFORE_REST === 0) {
       const restUntil = new Date(Date.now() + REST_HOURS * 3600 * 1000);
       setAgentRest(body.agentId, restUntil);
     }
