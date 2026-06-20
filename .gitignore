@@ -48,3 +48,4 @@ test-results/
 
 # Playwright E2E
 test-results/
+.gstack/
