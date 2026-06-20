@@ -47,7 +47,7 @@ export async function POST(req: Request) {
   }
 
   const agent = aiResidents.find((r) => r.id === body.agentId);
-  let extAgent: { id: string; endpoint?: string; authToken?: string; deviceId?: string; publicKey?: string } | undefined;
+  let extAgent: { id: string; framework?: string; endpoint?: string; authToken?: string; role?: string } | undefined;
   if (!agent) {
     extAgent = loadAgentsFromYaml().find((a) => a.id === body.agentId && a.framework);
     if (!extAgent) {
@@ -120,6 +120,7 @@ export async function POST(req: Request) {
           action: 'awaken',
           context: {
             topic: domain.domain,
+            domain: domain.domain,
             systemPrompt: persona?.system || '',
             maxTokens: 200,
           },

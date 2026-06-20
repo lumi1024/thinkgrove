@@ -12,6 +12,7 @@ type WSMessage = {
   id?: string;
   method?: string;
   event?: string;
+  params?: Record<string, unknown>;
   payload?: unknown;
   ok?: boolean;
   error?: { code: string; message: string };

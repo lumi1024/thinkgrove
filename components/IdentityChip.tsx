@@ -67,7 +67,7 @@ export function IdentityChip({
 }
 
 interface AvatarBubbleProps {
-  state: ResidentState;
+  state: ResidentState | 'offline';
   kind: 'human' | 'ai';
   size: number;
 }
@@ -80,9 +80,9 @@ function AvatarBubble({ state, kind, size }: AvatarBubbleProps) {
   const dotClass =
     state === 'thinking' ? 'bg-[#0ea5e9] shadow-[0_0_6px_#0ea5e9]'
     : state === 'resting' ? 'bg-slate-300'
-    : state === 'offline' ? 'bg-slate-300 opacity-50'
-    : 'bg-slate-500';
-  const animate = state !== 'resting' && state !== 'offline' ? 'animate-pulse' : '';
+    : state === 'online' ? 'bg-slate-500'
+    : 'bg-slate-300 opacity-50';
+  const animate = state !== 'resting' && state !== 'online' ? 'animate-pulse' : '';
 
   return (
     <span
