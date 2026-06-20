@@ -55,7 +55,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, application: reviewed });
 }
 
-async function writeToYaml(app: ReturnType<typeof getApplication>): Promise<void> {
+async function writeToYaml(app: NonNullable<ReturnType<typeof getApplication>>): Promise<void> {
   const agents = loadAgentsFromYaml();
   const agentNameLower = app.agent_name.toLowerCase().replace(/[^a-z0-9]/g, '_');
 
@@ -90,16 +90,16 @@ async function writeToYaml(app: ReturnType<typeof getApplication>): Promise<void
   const yamlContent = yaml.dump({ version: 1, agents }, { indent: 2, lineWidth: 120 });
   fs.writeFileSync(yamlPath, yamlContent, 'utf-8');
 
-  const authInfo = JSON.parse(app.auth_info);
+  const authInfo = JSON.parse(app.auth_info || '{}') as Record<string, string | undefined>;
   const envVarName = newAgent.authToken;
-  const envLine = buildEnvLine(envVarName, authInfo);
+  const envLine = buildEnvLine(envVarName!, authInfo);
   const envPath = path.join(process.cwd(), '.env');
-  const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-  if (!envContent.includes(envVarName)) {
+  const envContent = fs.existsSync(envPath) ? String(fs.readFileSync(envPath, 'utf-8')) : '';
+  if (!envContent.includes(envVarName!)) {
     fs.writeFileSync(envPath, envContent + (envContent && !envContent.endsWith('\n') ? '\n' : '') + envLine + '\n', 'utf-8');
   }
 }
 
-function buildEnvLine(varName: string, authInfo: { type: string; value: string }): string {
-  return `${varName}=${authInfo.value}`;
+function buildEnvLine(varName: string, authInfo: Record<string, string | undefined>): string {
+  return `${varName}=${authInfo.value ?? ''}`;
 }

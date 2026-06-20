@@ -32,8 +32,8 @@ export function extractSessionId(request: NextRequest): string | null {
   return request.cookies.get(COOKIE_NAME)?.value || null;
 }
 
-export function requireAdmin(request: NextRequest): { ok: boolean; sessionId?: string; response?: NextResponse } {
-  const sessionId = extractSessionId(request);
+export function requireAdmin(request: Request | NextRequest): { ok: boolean; sessionId?: string; response?: NextResponse } {
+  const sessionId = request instanceof NextRequest ? extractSessionId(request) : null;
   if (!sessionId) {
     return { ok: false, response: NextResponse.json({ error: 'unauthorized' }, { status: 401 }) };
   }

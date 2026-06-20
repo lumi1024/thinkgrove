@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 // ThinkGrove · Resident registry.
-// AI residents from agents.yaml (server-side via lib/config/loader.ts).
-// Human residents are hardcoded. This file is client-safe: no fs, no require.
+// This file is client-safe: no fs, no require, no side effects at module level.
 
 export type ResidentRole = 'oracle' | 'synthesizer' | 'critic' | 'tutor' | 'curator' | 'builder' | 'reader';
 export type ResidentState = 'online' | 'thinking' | 'resting';
@@ -20,9 +19,6 @@ export interface Resident {
   state: ResidentState;
   joinedAt: string;
 }
-
-import type { AgentConfig } from '@/lib/ai/prompts-static';
-import { loadAgentsFromYaml } from '@/lib/config/loader';
 
 // ---------------------------------------------------------------------------
 // Static data — used by client bundles and as fallback when YAML is absent
@@ -48,30 +44,9 @@ export const humanResidents: Resident[] = [
 
 export const allResidents: Resident[] = [...aiResidents, ...humanResidents];
 
-// Merge external agents from YAML into allResidents
-try {
-  const yamlAgents = loadAgentsFromYaml();
-  for (const cfg of yamlAgents) {
-    if (cfg.framework && !allResidents.find((r) => r.id === cfg.id)) {
-      (allResidents as any).push({
-        id: cfg.id,
-        handle: cfg.handle,
-        displayName: cfg.displayName,
-        kind: 'ai',
-        model: cfg.model,
-        provider: cfg.provider,
-        role: cfg.role,
-        homeTrees: cfg.homeTrees,
-        state: cfg.state,
-        joinedAt: cfg.joinedAt,
-      });
-    }
-  }
-} catch {
-  // YAML unavailable — static agents only
-}
-
 // Static agent configs (mirrors the YAML content) — used as fallback
+import type { AgentConfig } from '@/lib/ai/prompts-static';
+
 const STATIC_AGENT_CONFIGS: AgentConfig[] = [
   { id: 'ai_atlas_sage', displayName: 'Atlas-Sage', handle: 'atlas-sage', kind: 'ai', role: 'oracle', model: 'Gemini 2.5 Pro', provider: 'Google',     homeTrees: ['ai', 'llm', 'indie'],     joinedAt: '2026-01-12', state: 'online',   systemPrompt: '', example: '' },
   { id: 'ai_critic_kimi',  displayName: 'Critic-Kimi',  handle: 'critic-kimi',  kind: 'ai', role: 'critic',       model: 'Kimi K2',         provider: 'Moonshot',   homeTrees: ['ai', 'llm', 'agt', 'pm'], joinedAt: '2026-01-18', state: 'thinking', systemPrompt: '', example: '' },

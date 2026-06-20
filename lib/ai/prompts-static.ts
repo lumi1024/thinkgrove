@@ -11,6 +11,8 @@ export interface AgentConfig {
   role: string;
   model: string;
   provider: string;
+  framework?: string;
+  endpoint?: string;
   homeTrees: string[];
   joinedAt: string;
   state: string;

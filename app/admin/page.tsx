@@ -13,6 +13,7 @@ type Application = {
   contact: string;
   framework: string;
   endpoint: string;
+  auth_info: string;
   agent_name: string;
   role: string;
   bio: string;
