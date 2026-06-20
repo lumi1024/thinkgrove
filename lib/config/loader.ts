@@ -21,6 +21,11 @@ export interface AgentConfig {
   state: string;
   systemPrompt: string;
   example: string;
+  framework?: string;
+  endpoint?: string;
+  authToken?: string;
+  deviceId?: string;
+  publicKey?: string;
 }
 
 export function loadDomainsFromYaml(): Record<string, unknown>[] {
