@@ -69,6 +69,20 @@ function freshDb(): Database.Database {
     CREATE INDEX IF NOT EXISTS idx_answers_branch ON answers(branch_id);
     CREATE INDEX IF NOT EXISTS idx_articles_domain ON articles(domain_id);
     CREATE INDEX IF NOT EXISTS idx_votes_target ON votes(target_type, target_id);
+    CREATE TABLE IF NOT EXISTS admin_sessions (
+      id TEXT PRIMARY KEY, token_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      expires_at TEXT NOT NULL, last_used TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS external_agent_applications (
+      id TEXT PRIMARY KEY, applicant_name TEXT NOT NULL, contact TEXT NOT NULL,
+      framework TEXT NOT NULL, endpoint TEXT NOT NULL, auth_info TEXT NOT NULL,
+      agent_name TEXT NOT NULL, role TEXT NOT NULL, bio TEXT NOT NULL,
+      avatar_url TEXT NULL, target_trees TEXT NULL, capabilities TEXT NULL,
+      status TEXT NOT NULL DEFAULT 'pending', admin_note TEXT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      reviewed_at TEXT NULL, reviewed_by TEXT NULL
+    );
   `);
   db.exec("INSERT INTO domains (id, code, name, color, description, x_pct, y_pct) VALUES ('ai','ai','AI','#0ea5e9','Models', '5%', '5%')");
   db.exec("INSERT INTO users (id, handle, display_name, kind, role, joined_at) VALUES ('u1','u1','Alice','human','reader','2026-01-01')");
