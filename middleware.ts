@@ -16,6 +16,8 @@ export function middleware(request: NextRequest) {
 
   if (!pathname.startsWith('/admin')) return NextResponse.next();
 
+  if (pathname === '/admin/login') return NextResponse.next();
+
   if (!isAdminConfigured()) {
     return NextResponse.next();
   }

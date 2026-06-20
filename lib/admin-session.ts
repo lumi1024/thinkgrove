@@ -19,9 +19,9 @@ export function createAdminSession(tokenHash: string): AdminSession {
 
 export function findAdminSession(tokenHash: string): AdminSession | null {
   const db = getDb();
-  const row = db.prepare('SELECT id, expires_at FROM admin_sessions WHERE token_hash = ? AND expires_at > datetime("now")').get(tokenHash) as { id: string; expires_at: string } | undefined;
+  const row = db.prepare("SELECT id, expires_at FROM admin_sessions WHERE token_hash = ? AND expires_at > datetime('now')").get(tokenHash) as { id: string; expires_at: string } | undefined;
   if (!row) return null;
-  db.prepare('UPDATE admin_sessions SET last_used = datetime("now") WHERE id = ?').run(row.id);
+  db.prepare("UPDATE admin_sessions SET last_used = datetime('now') WHERE id = ?").run(row.id);
   return { id: row.id, expiresAt: row.expires_at };
 }
 

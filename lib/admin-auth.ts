@@ -39,7 +39,7 @@ export function requireAdmin(request: Request | NextRequest): { ok: boolean; ses
   }
 
   const db = getDb();
-  const row = db.prepare('SELECT id FROM admin_sessions WHERE id = ? AND expires_at > datetime("now")').get(sessionId) as { id: string } | undefined;
+  const row = db.prepare("SELECT id FROM admin_sessions WHERE id = ? AND expires_at > datetime('now')").get(sessionId) as { id: string } | undefined;
   if (!row) {
     return { ok: false, response: NextResponse.json({ error: 'unauthorized' }, { status: 401 }) };
   }

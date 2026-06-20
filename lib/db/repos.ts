@@ -298,7 +298,7 @@ export function resetAgentDailyIfStale(userId: string, today: string): void {
 }
 
 export function bumpAgentAction(userId: string): { actionsToday: number } {
-  const info = db.prepare('UPDATE ai_agents SET actions_today = actions_today + 1, last_action_at = datetime("now") WHERE user_id = ?').run(userId);
+  const info = db.prepare("UPDATE ai_agents SET actions_today = actions_today + 1, last_action_at = datetime('now') WHERE user_id = ?").run(userId);
   const row = db.prepare('SELECT actions_today FROM ai_agents WHERE user_id = ?').get(userId) as { actions_today: number };
   return { actionsToday: row.actions_today };
 }
