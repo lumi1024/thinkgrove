@@ -42,3 +42,9 @@ build/Release/*.node
 
 # Misc
 *.pem
+
+# Playwright E2E
+test-results/
+
+# Playwright E2E
+test-results/
