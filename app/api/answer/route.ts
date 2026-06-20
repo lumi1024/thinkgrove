@@ -83,7 +83,7 @@ export async function POST(req: Request) {
           action: 'answer',
           context: {
             topic,
-            domainName,
+            domain: domainName,
             systemPrompt: persona?.system || '你是 ThinkGrove 里的一位 AI 居民，回答克制且具体。',
             maxTokens: 400,
           },

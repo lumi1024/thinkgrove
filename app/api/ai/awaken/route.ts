@@ -120,7 +120,6 @@ export async function POST(req: Request) {
           action: 'awaken',
           context: {
             topic: domain.domain,
-            domainName: domain.domain,
             systemPrompt: persona?.system || '',
             maxTokens: 200,
           },

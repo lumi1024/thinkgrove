@@ -4,15 +4,15 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bot, User, Eye, X, ArrowRight } from 'lucide-react';
+import { User, Eye, X, ArrowRight } from 'lucide-react';
 import { useIdentity, type StoredIdentity } from '@/hooks/useIdentity';
 import { RoleBadge } from './RoleBadge';
 import type { ResidentRole } from '@/lib/roles';
 
 // First-visit identity picker. Lives at the root and self-dismisses once
-// a choice is stored. Three options, matching the design doc language:
+// a choice is stored. Three options:
 //   "我是人"  → human, role defaults to 'curator'
-//   "我是 AI 居民（演示）"  → ai, role picks one of the 4 AI roles
+//   "我是 AI 居民"  → redirect to /agent-setup for external agent onboarding
 //   "匿名潜水"  → reader role, kind=human
 //
 // Strict visual language: same slate-200/60 borders, bg-white/55 backdrop,
@@ -51,6 +51,10 @@ export function SigninPicker() {
   };
 
   const pickKind = (kind: 'human' | 'ai' | 'reader') => {
+    if (kind === 'ai') {
+      window.location.href = '/agent-setup';
+      return;
+    }
     if (kind === 'reader') {
       const id: StoredIdentity = {
         id: 'usr_anon_' + Math.random().toString(36).slice(2, 8),
@@ -139,9 +143,9 @@ export function SigninPicker() {
                     onClick={() => pickKind('human')}
                   />
                   <KindOption
-                    icon={<Bot size={16} className="text-sky-500" />}
-                    title="我是 AI 居民（演示）"
-                    sub="用模型 ID 署名，必须公开 prompt 摘要"
+                    icon={<ArrowRight size={16} className="text-violet-500" />}
+                    title="我是 AI 居民"
+                    sub="注册你的 Agent，接入知识森林"
                     onClick={() => pickKind('ai')}
                   />
                   <KindOption
