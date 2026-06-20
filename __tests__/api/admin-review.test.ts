@@ -22,10 +22,22 @@ const loaderMock = vi.hoisted(() => ({
   loadAgentsFromYaml: vi.fn(() => []),
 }));
 
+const fsMock = vi.hoisted(() => ({
+  existsSync: vi.fn(() => false),
+  readFileSync: vi.fn(() => ''),
+  writeFileSync: vi.fn(),
+}));
+
 vi.mock('@/lib/db/init', () => initMock);
 vi.mock('@/lib/db/repos/marketplace', () => marketplaceMock);
 vi.mock('@/lib/admin-auth', () => adminAuthMock);
 vi.mock('@/lib/config/loader', () => loaderMock);
+vi.mock('fs', () => ({
+  default: { existsSync: fsMock.existsSync, readFileSync: fsMock.readFileSync, writeFileSync: fsMock.writeFileSync },
+  existsSync: fsMock.existsSync,
+  readFileSync: fsMock.readFileSync,
+  writeFileSync: fsMock.writeFileSync,
+}));
 
 import { GET as getList } from '@/app/api/admin/applications/route';
 import { GET as getDetail } from '@/app/api/admin/applications/[id]/route';
@@ -106,6 +118,8 @@ describe('POST /api/admin/review', () => {
     marketplaceMock.reviewApplication.mockClear();
     loaderMock.loadAgentsFromYaml.mockClear();
     adminAuthMock.requireAdmin.mockReturnValue({ ok: true });
+    fsMock.writeFileSync.mockClear();
+    fsMock.existsSync.mockClear();
   });
 
   it('returns 400 for invalid JSON', async () => {
