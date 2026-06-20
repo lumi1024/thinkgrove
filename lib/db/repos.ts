@@ -303,6 +303,12 @@ export function bumpAgentAction(userId: string): { actionsToday: number } {
   return { actionsToday: row.actions_today };
 }
 
+export function ensureAgentState(userId: string): void {
+  db.prepare(
+    `INSERT OR IGNORE INTO ai_agents (user_id, model, provider, agent_role, actions_today, last_action_at) VALUES (?, ?, ?, ?, 0, NULL)`,
+  ).run(userId, 'external', 'unknown', 'tutor');
+}
+
 export function setAgentRest(userId: string, restUntil: Date): void {
   db.prepare('UPDATE ai_agents SET rest_until = ? WHERE user_id = ?').run(restUntil.toISOString(), userId);
 }

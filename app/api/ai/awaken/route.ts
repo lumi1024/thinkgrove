@@ -8,7 +8,6 @@
 
 import { NextResponse } from 'next/server';
 import { ensureInit } from '@/lib/db/init';
-import { getDb } from '@/lib/db/pool';
 import {
   createBranch,
   makeUser,
@@ -17,6 +16,7 @@ import {
   resetAgentDailyIfStale,
   bumpAgentAction,
   setAgentRest,
+  ensureAgentState,
 } from '@/lib/db/repos';
 import { resolveProvider } from '@/lib/ai/provider';
 import { loadAgentsFromYaml } from '@/lib/config/loader';
@@ -178,11 +178,7 @@ export async function POST(req: Request) {
         role: 'external',
         joined_at: new Date().toISOString().split('T')[0],
       }));
-      getDb()
-        .prepare(
-          `INSERT OR IGNORE INTO ai_agents (user_id, model, provider, agent_role, actions_today, last_action_at) VALUES (?, ?, ?, ?, 0, NULL)`,
-        )
-        .run(extAgent.id, extAgent.model || 'external', extAgent.framework || 'unknown', extAgent.role || 'tutor');
+      ensureAgentState(extAgent.id);
     }
 
     const branchId = 'br_' + Math.random().toString(36).slice(2, 12);
