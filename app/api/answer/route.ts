@@ -9,6 +9,7 @@ import { NextResponse } from 'next/server';
 import { ensureInit } from '@/lib/db/init';
 import { createAnswer, getBranch, makeUser, upsertUser } from '@/lib/db/repos';
 import { resolveProvider } from '@/lib/ai/provider';
+import { loadAgentsFromYaml } from '@/lib/config/loader';
 import { domains as FALLBACK_DOMAINS } from '@/lib/domains';
 import { RESIDENT_PROMPTS, mockAnswer } from '@/lib/ai/prompts';
 
@@ -49,22 +50,72 @@ export async function POST(req: Request) {
   if (body.authorKind === 'ai') {
     const persona = RESIDENT_PROMPTS[body.authorId];
     const systemPrompt = persona?.system || '你是 ThinkGrove 里的一位 AI 居民，回答克制且具体。';
-    const provider = resolveProvider();
-    try {
-      const result = await provider.chat(
-        [{ role: 'user', content: `请围绕「${topic}」给出一段 80-160 字的回答。领域：${domainName}。不要寒暄。` }],
-        { system: systemPrompt, maxTokens: 400 },
-      );
-      finalBody = result.text;
-      promptHash = result.promptHash;
-      aiGenerated = true;
-    } catch (e) {
-      // Provider failed — use a generic fallback
-      finalBody = mockAnswer(body.authorId, topic, domainName) ||
-        `关于「${topic}」的一个未充分讨论的视角：在 ${domainName} 的多数讨论里，结论是"该用 A 不用 B"，但 A 的失败成本从未被量化。建议先量 3 个真实案例的失败成本，再回到"该用 A 不用 B"。`;
-      promptHash = 'mock-fallback';
-      aiGenerated = true;
-      console.warn('[api/answer] AI provider failed, using generic fallback:', (e as Error).message);
+    const agents = loadAgentsFromYaml();
+    const agentConfig = agents.find((a) => a.id === body.authorId);
+
+    if (agentConfig?.framework) {
+      const { ExternalAgentResolver } = await import('@/lib/external-agents/resolver');
+      const { OfflineStateStore } = await import('@/lib/external-agents/offline-state');
+      const resolver = new ExternalAgentResolver();
+      const offlineStore = new OfflineStateStore();
+
+      if (offlineStore.isOffline(body.authorId)) {
+        return NextResponse.json({ error: 'agent is offline' }, { status: 503 });
+      }
+
+      const adapter = resolver.resolve({
+        id: agentConfig.id,
+        framework: agentConfig.framework,
+        endpoint: agentConfig.endpoint || '',
+        authToken: agentConfig.authToken,
+        deviceId: agentConfig.deviceId,
+        publicKey: agentConfig.publicKey,
+      });
+
+      if (!adapter) {
+        offlineStore.setOffline(body.authorId);
+        return NextResponse.json({ error: 'adapter unavailable' }, { status: 503 });
+      }
+
+      try {
+        const result = await adapter.invoke({
+          agentId: body.authorId,
+          action: 'answer',
+          context: {
+            topic,
+            domainName,
+            systemPrompt: persona?.system || '你是 ThinkGrove 里的一位 AI 居民，回答克制且具体。',
+            maxTokens: 400,
+          },
+        });
+        offlineStore.setOnline(body.authorId);
+        finalBody = result.text;
+        promptHash = 'ph_ext_' + result.model;
+        aiGenerated = true;
+      } catch (e) {
+        offlineStore.setOffline(body.authorId);
+        return NextResponse.json(
+          { error: 'external agent unavailable', offline: true },
+          { status: 503 },
+        );
+      }
+    } else {
+      const provider = resolveProvider();
+      try {
+        const result = await provider.chat(
+          [{ role: 'user', content: `请围绕「${topic}」给出一段 80-160 字的回答。领域：${domainName}。不要寒暄。` }],
+          { system: systemPrompt, maxTokens: 400 },
+        );
+        finalBody = result.text;
+        promptHash = result.promptHash;
+        aiGenerated = true;
+      } catch (e) {
+        finalBody = mockAnswer(body.authorId, topic, domainName) ||
+          `关于「${topic}」的一个未充分讨论的视角：在 ${domainName} 的多数讨论里，结论是"该用 A 不用 B"，但 A 的失败成本从未被量化。建议先量 3 个真实案例的失败成本，再回到"该用 A 不用 B"。`;
+        promptHash = 'mock-fallback';
+        aiGenerated = true;
+        console.warn('[api/answer] AI provider failed, using generic fallback:', (e as Error).message);
+      }
     }
   }
 
