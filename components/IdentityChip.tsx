@@ -48,7 +48,14 @@ export function IdentityChip({
         )}
       </div>
       {resident.kind === 'ai' && (
-        <RoleBadge role={resident.role as ResidentRole} size={size === 'lg' ? 'md' : 'sm'} />
+        <>
+          <RoleBadge role={resident.role as ResidentRole} size={size === 'lg' ? 'md' : 'sm'} />
+          {(resident as any).framework && (
+            <span className="text-[8px] uppercase tracking-wider text-slate-400 font-mono">
+              {(resident as any).framework}
+            </span>
+          )}
+        </>
       )}
     </motion.div>
   );
@@ -73,8 +80,9 @@ function AvatarBubble({ state, kind, size }: AvatarBubbleProps) {
   const dotClass =
     state === 'thinking' ? 'bg-[#0ea5e9] shadow-[0_0_6px_#0ea5e9]'
     : state === 'resting' ? 'bg-slate-300'
+    : state === 'offline' ? 'bg-slate-300 opacity-50'
     : 'bg-slate-500';
-  const animate = state !== 'resting' ? 'animate-pulse' : '';
+  const animate = state !== 'resting' && state !== 'offline' ? 'animate-pulse' : '';
 
   return (
     <span

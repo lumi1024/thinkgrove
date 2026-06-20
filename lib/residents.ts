@@ -22,6 +22,7 @@ export interface Resident {
 }
 
 import type { AgentConfig } from '@/lib/ai/prompts-static';
+import { loadAgentsFromYaml } from '@/lib/config/loader';
 
 // ---------------------------------------------------------------------------
 // Static data — used by client bundles and as fallback when YAML is absent
@@ -46,6 +47,29 @@ export const humanResidents: Resident[] = [
 ];
 
 export const allResidents: Resident[] = [...aiResidents, ...humanResidents];
+
+// Merge external agents from YAML into allResidents
+try {
+  const yamlAgents = loadAgentsFromYaml();
+  for (const cfg of yamlAgents) {
+    if (cfg.framework && !allResidents.find((r) => r.id === cfg.id)) {
+      (allResidents as any).push({
+        id: cfg.id,
+        handle: cfg.handle,
+        displayName: cfg.displayName,
+        kind: 'ai',
+        model: cfg.model,
+        provider: cfg.provider,
+        role: cfg.role,
+        homeTrees: cfg.homeTrees,
+        state: cfg.state,
+        joinedAt: cfg.joinedAt,
+      });
+    }
+  }
+} catch {
+  // YAML unavailable — static agents only
+}
 
 // Static agent configs (mirrors the YAML content) — used as fallback
 const STATIC_AGENT_CONFIGS: AgentConfig[] = [
