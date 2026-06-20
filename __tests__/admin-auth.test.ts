@@ -3,31 +3,37 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
+const sessionMock = vi.hoisted(() => ({
+  createAdminSession: vi.fn((tokenHash: string) => ({ id: 'adm_' + tokenHash.slice(0, 8), expiresAt: '2099-01-01T00:00:00Z' })),
+  findAdminSession: vi.fn(() => null),
+  deleteAdminSession: vi.fn(),
+}));
+
 const poolMock = vi.hoisted(() => ({
   getDb: vi.fn(),
 }));
 
+vi.mock('@/lib/admin-session', () => sessionMock);
 vi.mock('@/lib/db/pool', () => poolMock);
 
-const sessionMock = vi.hoisted(() => ({
-  createAdminSession: vi.fn((hash: string) => ({ id: 'adm_' + hash.slice(0, 8), expiresAt: '2099-01-01T00:00:00Z' })),
-  findAdminSession: vi.fn((hash: string) => hash === 'valid_hash' ? { id: 'adm_s1', expiresAt: '2099-01-01T00:00:00Z' } : null),
-  deleteAdminSession: vi.fn(),
-}));
-
-vi.mock('@/lib/admin-session', () => sessionMock);
-
-// Import AFTER vi.mock
-import { isAdminConfigured, adminLogin, verifyAdminRequest, extractSessionIdFromRequest, adminLogout } from '@/lib/admin-auth';
+// Import AFTER vi.mock so mocks are in place
+import { isAdminConfigured, adminLogin, adminLogout, extractSessionId, requireAdmin } from '@/lib/admin-auth';
 
 const ORIGINAL_ENV = process.env;
 
 describe('admin-auth', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    sessionMock.createAdminSession.mockImplementation((hash: string) => ({ id: 'adm_' + hash.slice(0, 8), expiresAt: '2099-01-01T00:00:00Z' }));
-    sessionMock.findAdminSession.mockImplementation((hash: string) => hash === 'valid_hash' ? { id: 'adm_s1', expiresAt: '2099-01-01T00:00:00Z' } : null);
-    process.env = { ...ORIGINAL_ENV, ADMIN_KEY: 'test-admin-key-123' };
+    process.env.ADMIN_KEY = 'test-admin-key-123';
+    sessionMock.createAdminSession.mockImplementation((h: string) => ({ id: 'adm_' + h.slice(0, 8), expiresAt: '2099-01-01T00:00:00Z' }));
+    sessionMock.findAdminSession.mockReturnValue(null);
+    poolMock.getDb.mockReturnValue({
+      prepare: vi.fn(() => ({ get: vi.fn(() => undefined), run: vi.fn() })),
+    });
+  });
+
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV };
   });
 
   it('isAdminConfigured returns false when ADMIN_KEY is empty', () => {
@@ -60,48 +66,53 @@ describe('admin-auth', () => {
     expect(sessionMock.createAdminSession).not.toHaveBeenCalled();
   });
 
-  it('verifyAdminRequest returns true for valid cookie', () => {
-    sessionMock.findAdminSession.mockReturnValue({ id: 'adm_xyz', expiresAt: '2099-01-01T00:00:00Z' });
+  it('extractSessionId returns cookie value', () => {
     const req = new NextRequest('http://localhost/admin', {
-      headers: { cookie: 'tg_admin=valid-cookie-value' },
+      headers: { cookie: 'tg_admin=session_id_123' },
     });
-    // hashToken('valid-cookie-value') needs to produce 'valid_hash' for this to work
-    // Since we can't predict SHA-256, we mock findAdminSession to always return valid
-    sessionMock.findAdminSession.mockReturnValue({ id: 'adm_xyz', expiresAt: '2099-01-01T00:00:00Z' });
-    expect(verifyAdminRequest(req)).toBe(true);
+    expect(extractSessionId(req)).toBe('session_id_123');
   });
 
-  it('verifyAdminRequest returns false for missing cookie', () => {
+  it('extractSessionId returns null for missing cookie', () => {
     const req = new NextRequest('http://localhost/admin');
-    expect(verifyAdminRequest(req)).toBe(false);
+    expect(extractSessionId(req)).toBeNull();
   });
 
-  it('verifyAdminRequest returns false for expired session', () => {
-    sessionMock.findAdminSession.mockReturnValue(null);
-    const req = new NextRequest('http://localhost/admin', {
-      headers: { cookie: 'tg_admin=expired-cookie' },
+  it('requireAdmin returns ok:true for valid session', () => {
+    poolMock.getDb.mockReturnValue({
+      prepare: vi.fn(() => ({ get: vi.fn(() => ({ id: 'adm_xyz' })), run: vi.fn() })),
     });
-    expect(verifyAdminRequest(req)).toBe(false);
-  });
-
-  it('extractSessionIdFromRequest returns id for valid cookie', () => {
-    sessionMock.findAdminSession.mockReturnValue({ id: 'adm_session1', expiresAt: '2099-01-01T00:00:00Z' });
     const req = new NextRequest('http://localhost/admin', {
-      headers: { cookie: 'tg_admin=valid-cookie' },
+      headers: { cookie: 'tg_admin=valid-session-id' },
     });
-    expect(extractSessionIdFromRequest(req)).toBe('adm_session1');
+    const result = requireAdmin(req);
+    expect(result.ok).toBe(true);
+    expect(result.sessionId).toBe('adm_xyz');
   });
 
-  it('extractSessionIdFromRequest returns null for missing cookie', () => {
+  it('requireAdmin returns 401 for missing cookie', () => {
     const req = new NextRequest('http://localhost/admin');
-    expect(extractSessionIdFromRequest(req)).toBeNull();
+    const result = requireAdmin(req);
+    expect(result.ok).toBe(false);
+    expect(result.response?.status).toBe(401);
+  });
+
+  it('requireAdmin returns 401 for expired session', () => {
+    poolMock.getDb.mockReturnValue({
+      prepare: vi.fn(() => ({ get: vi.fn(() => undefined), run: vi.fn() })),
+    });
+    const req = new NextRequest('http://localhost/admin', {
+      headers: { cookie: 'tg_admin=expired-id' },
+    });
+    const result = requireAdmin(req);
+    expect(result.ok).toBe(false);
+    expect(result.response?.status).toBe(401);
   });
 
   it('adminLogout deletes session and clears cookie', async () => {
     sessionMock.deleteAdminSession.mockReturnValue(undefined);
     const response = await adminLogout('adm_test');
     expect(response.status).toBe(200);
-    const json = await response.json();
-    expect(json.ok).toBe(true);
+    expect((await response.json()).ok).toBe(true);
   });
 });

@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdminConfigured } from '@/lib/admin-auth';
+import { getDb } from '@/lib/db/pool';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -20,9 +21,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
-  const { verifyAdminRequest } = require('@/lib/admin-auth');
-  const valid = verifyAdminRequest(request);
-  if (!valid) {
+  const db = getDb();
+  const row = db.prepare('SELECT id FROM admin_sessions WHERE id = ? AND expires_at > datetime("now")').get(adminCookie.value) as { id: string } | undefined;
+  if (!row) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
