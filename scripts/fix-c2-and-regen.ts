@@ -72,8 +72,8 @@ for (const tc of allCases) {
   // Step 1: Try to get meaningful lines from raw 期望结果
   let lines = rawResults
     .split(/\n|；/)
-    .map(l => stripNumbering(l).trim())
-    .filter(l => l.length > 0 && !isC2Filler(l));
+    .map((l: string) => stripNumbering(l).trim())
+    .filter((l: string) => l.length > 0 && !isC2Filler(l));
 
   // Step 2: If raw is all C2 filler, try source file
   if (lines.length === 0 && src && src.expected_results) {

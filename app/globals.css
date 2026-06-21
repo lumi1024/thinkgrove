@@ -76,3 +76,33 @@ a:focus-visible,
 [data-theme="night"] .glass-card .border-slate-200\/60 {
   border-color: var(--glass-border) !important;
 }
+
+
+/* ============================================
+   Design system — font + display layers
+   ============================================ */
+@layer base {
+  :root {
+    --font-display: 'Cormorant Garamond', 'Georgia', serif;
+    --font-body: 'DM Sans', 'Helvetica Neue', 'PingFang SC', sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  html { font-family: var(--font-body); }
+  body {
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+  .font-display {
+    font-family: var(--font-display) !important;
+    font-weight: 400;
+  }
+}

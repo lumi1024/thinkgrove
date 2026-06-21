@@ -461,7 +461,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
       {/* ============================================================
           DEEP DIVE — scroll into the tree's content
           ============================================================ */}
-      <section className="relative w-full bg-gradient-to-b from-[var(--theme-bg)] via-[var(--theme-bg)] to-[var(--theme-bg)] py-24 md:py-32">
+      <section className="relative w-full bg-gradient-to-b from-transparent via-[var(--theme-bg)]/95 to-[var(--theme-bg)] py-24 md:py-32">
         <div className="max-w-6xl mx-auto px-6 md:px-12">
           {/* Section heading */}
           <motion.div
@@ -539,7 +539,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, margin: '-50px' }}
                       transition={{ duration: 0.6, delay: i * 0.08 }}
-                      className="group cursor-pointer p-7 rounded-2xl border border-slate-200/60 bg-white/70 hover:bg-white hover:shadow-[0_12px_40px_rgba(15,23,42,0.06)] hover:-translate-y-0.5 transition-all duration-500"
+                      className="group cursor-pointer p-7 rounded-2xl border border-slate-300/80 bg-white/85 hover:bg-white hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 transition-all duration-500"
                     >
                       <div className="flex justify-between items-center mb-4">
                         <div className="text-[10px] font-mono text-slate-400 tracking-widest">{article.date}</div>
@@ -586,7 +586,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true, margin: '-50px' }}
                       transition={{ duration: 0.6, delay: i * 0.06 }}
-                      className="cursor-pointer p-6 md:p-7 rounded-2xl border border-slate-200/60 bg-white/60 hover:bg-white hover:shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all duration-500 group"
+                      className="cursor-pointer p-6 md:p-7 rounded-2xl border border-slate-300/80 bg-white/80 hover:bg-white hover:shadow-[0_8px_30px_rgba(15,23,42,0.06)] transition-all duration-500 group"
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2">
