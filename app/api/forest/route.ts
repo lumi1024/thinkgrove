@@ -101,8 +101,8 @@ function authorName(id: string): { name: string; kind: 'human' | 'ai' } | null {
 }
 
 function topResidentsFor(domainId: string) {
-  const ai = aiResidents.find((r) => r.homeTrees.includes(domainId)) || aiResidents[0];
-  const humans = humanResidents.filter((r) => r.homeTrees.includes(domainId)).slice(0, 2);
+  const ai = aiResidents.find((r) => (r.homeTrees || []).includes(domainId)) || aiResidents[0];
+  const humans = humanResidents.filter((r) => (r.homeTrees || []).includes(domainId)).slice(0, 2);
   return [ai, ...humans].slice(0, 3).map((r) => ({
     id: r.id,
     displayName: r.displayName,
