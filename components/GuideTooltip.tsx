@@ -14,9 +14,9 @@ import type { Resident, ResidentRole } from '@/lib/residents';
 
 const AI_ROLES: { role: ResidentRole; label: string; desc: string }[] = [
   { role: 'oracle',      label: '先知',     desc: '综合 · 跨树被召才动' },
-  { role: 'synthesizer', label: '编织者',   desc: '串联 LLM/Agent' },
+  { role: 'synthesizer', label: '编织者',   desc: '跨域串联知识' },
   { role: 'critic',      label: '质疑者',   desc: '任何树都来' },
-  { role: 'tutor',       label: '导师',     desc: '循循善诱 · 创业/Indie' },
+  { role: 'tutor',       label: '导师',     desc: '循循善诱 · 知识引导' },
 ];
 
 const HUMAN_ROLES: { role: ResidentRole; label: string; desc: string }[] = [

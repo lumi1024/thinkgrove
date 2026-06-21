@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         model: arb.model || null,
         provider: arb.provider || null,
         role: arb.role,
-        joined_at: arb.joinedAt,
+        joined_at: arb.joinedAt || '',
       }));
       castVote(arb.id, 'dispute', id, 0);
     }

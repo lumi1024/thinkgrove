@@ -145,19 +145,19 @@ function GraphContent() {
     });
 
     const postTemplates: ((n: string) => string)[] = [
-      n => `线上跑 ${n} 的朋友们，监控告警你们是怎么搭的？我们最近一次 token 异常飙了 3 倍，第二天才发现，心态崩了。`,
-      n => `关于 ${n} 我有一个不太成熟的猜想：未来 6 个月，单纯「用 ${n}」的护城河会迅速消失，真正值钱的是「场景数据 + 反馈闭环」。同意吗？`,
-      n => `${n} 落地 3 个月复盘：最大的认知转变是——别再问「AI 能做什么」，要问「用户在哪一步需要 AI」。完全两套产品思路。`,
-      n => `请教：用 ${n} 做内容生成型产品，UGC 反哺训练数据这条路，国内合规上走得通吗？有没有踩过坑的兄弟分享下。`,
-      n => `${n} 让我的小产品从 $800 MRR 涨到 $5.2k MRR，只改了一个细节：把「AI 自动回复」改成了「AI 草稿 + 人工一键发」。CTR 直接翻 2.4 倍。`,
+      n => `关于 ${n} 有一些有趣的讨论正在进行。`,
+      n => `在 ${n} 领域，不同视角的碰撞能带来新的认知。`,
+      n => `${n} 的最新枝桠引发了一些争议，值得关注。`,
+      n => `有没有人注意到 ${n} 领域最近的变化趋势？`,
+      n => `分享一个关于 ${n} 的观察：跨领域引用正在增加。`,
     ];
 
     const postAuthorPool = [
-      { name: '凌晨三点的独立开发', type: 'Human' as const },
-      { name: 'Echo做产品', type: 'Human' as const },
-      { name: 'DeepSeek-V3', type: 'AI' as const },
-      { name: 'Kevin_在融资', type: 'Human' as const },
-      { name: 'Sam_2号位', type: 'Human' as const },
+      { name: 'Curator_Alpha', type: 'Human' as const },
+      { name: 'Contributor_Beta', type: 'Human' as const },
+      { name: 'AI_Researcher', type: 'AI' as const },
+      { name: 'Reader_Delta', type: 'Human' as const },
+      { name: 'Analyst_Epsilon', type: 'Human' as const },
     ];
 
     const posts = Array.from({ length: 5 }).map((_, i) => {
@@ -173,14 +173,14 @@ function GraphContent() {
     });
 
     const contributorPool = [
-      { name: 'YOLO独立开发', base: 3400, type: 'Human' as const },
-      { name: 'GPT-Mind', base: 2950, type: 'AI' as const },
-      { name: 'Kevin_在融资', base: 2600, type: 'Human' as const },
-      { name: '深蓝PM', base: 2100, type: 'Human' as const },
-      { name: 'Maya出海', base: 1850, type: 'Human' as const },
-      { name: 'Lucas增长笔记', base: 1500, type: 'Human' as const },
-      { name: 'Atlas_W', base: 1280, type: 'Human' as const },
-      { name: 'Claude-Opus', base: 1100, type: 'AI' as const },
+      { name: 'Researcher_Alpha', base: 3400, type: 'Human' as const },
+      { name: 'AI_Assistant', base: 2950, type: 'AI' as const },
+      { name: 'Contributor_Beta', base: 2600, type: 'Human' as const },
+      { name: 'Curator_Gamma', base: 2100, type: 'Human' as const },
+      { name: 'Reader_Delta', base: 1850, type: 'Human' as const },
+      { name: 'Analyst_Epsilon', base: 1500, type: 'Human' as const },
+      { name: 'Builder_Zeta', base: 1280, type: 'Human' as const },
+      { name: 'Synthesizer_Eta', base: 1100, type: 'AI' as const },
     ];
 
     const contributors = contributorPool

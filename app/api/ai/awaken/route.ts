@@ -165,7 +165,7 @@ export async function POST(req: Request) {
         model: agent.model || null,
         provider: agent.provider || null,
         role: agent.role,
-        joined_at: agent.joinedAt,
+        joined_at: agent.joinedAt || '',
       }));
     } else if (extAgent) {
       upsertUser(makeUser({

@@ -23,7 +23,7 @@ export interface RealBranch {
 
 interface TreeProps {
   domain: string;
-  color: string;
+  color?: string;
   description: string;
   id: string;
   delay?: number;
@@ -38,6 +38,7 @@ interface TreeProps {
 
 
 export function KnowledgeTree({ domain, color, description, id, delay = 0, isDetailMode = false, onNodeSelect, realBranches, disableBranchCreator, domainSlug, restingResidents, sproutDomainId }: TreeProps) {
+  const treeColor = color || '#10b981';
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [activeNode, setActiveNode] = useState<{x: number, y: number, type: string, id: string, label?: string} | null>(null);
@@ -144,8 +145,8 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
       ];
       
       let qs: string[] = [];
-      if (node.label === 'LLM') {
-         qs = ['LLM的代表模型有哪些？', 'LLM的缺点是什么？', 'LLM的幻觉能否被彻底解决？'];
+      if (node.label === 'Domain A') {
+         qs = ['这个领域的核心问题是什么？', '有哪些关键概念需要理解？', '最常见的误解有哪些？'];
       } else {
          const rng = createLCG(node.id.charCodeAt(node.id.length-1) + 123);
          qs = qTemplates.sort(() => rng() - 0.5).slice(0, 3);
@@ -171,7 +172,7 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
           <motion.path
             d={`M ${node.px} ${node.py} Q ${node.cx} ${node.cy} ${node.x} ${node.y}`}
             fill="transparent"
-            stroke={color}
+            stroke={treeColor}
             strokeWidth={Math.max(0.5, 4 - depth * 1.2)}
             strokeLinecap="round"
             initial={{ pathLength: 0, opacity: 0 }}
@@ -182,7 +183,7 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
               delay: delay + depth * 0.15
             }}
             style={{
-              filter: isHovered || isDetailMode ? `drop-shadow(0 0 8px ${color})` : 'none',
+              filter: isHovered || isDetailMode ? `drop-shadow(0 0 8px ${treeColor})` : 'none',
               transition: 'filter 1s ease'
             }}
           />
@@ -203,7 +204,7 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
               delay: delay + depth * 0.15 + (1 + depth * 0.3) * 0.5
             }}
             style={{
-              filter: `drop-shadow(0 0 6px ${color})`,
+              filter: `drop-shadow(0 0 6px ${treeColor})`,
               pointerEvents: 'none'
             }}
           />
@@ -215,7 +216,7 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
               cy={node.y}
               r="14"
               fill="none"
-              stroke={color}
+              stroke={treeColor}
               strokeWidth="1.5"
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: [0, 0.7, 0], scale: [0.5, 1.8, 2.5] }}
@@ -236,7 +237,7 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
                 fontSize="6"
                 fill="#fff"
                 className="font-medium pointer-events-none"
-                style={{ textShadow: `0 1px 3px rgba(0,0,0,0.8), 0 2px 6px ${color}` }}
+                style={{ textShadow: `0 1px 3px rgba(0,0,0,0.8), 0 2px 6px ${treeColor}` }}
               >
                 {node.label || 'Node'}
               </motion.text>
@@ -265,7 +266,7 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
                   <motion.path
                     d={`M ${node.x} ${node.y} Q ${cx} ${cy} ${qx} ${qy}`}
                     fill="transparent"
-                    stroke={color}
+                    stroke={treeColor}
                     strokeWidth={0.8}
                     strokeDasharray="2 4"
                     initial={{ pathLength: 0, opacity: 0 }}
@@ -278,7 +279,7 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
-                    style={{ pointerEvents: 'none', filter: `drop-shadow(0 0 6px ${color})` }}
+                    style={{ pointerEvents: 'none', filter: `drop-shadow(0 0 6px ${treeColor})` }}
                   />
                   <AnimatePresence>
                     {(isHovered || isDetailMode) && (
@@ -291,7 +292,7 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
                         fontSize="5"
                         fill="#fff"
                         className="font-medium pointer-events-none"
-                        style={{ textShadow: `0 1px 3px rgba(0,0,0,0.8), 0 2px 6px ${color}` }}
+                        style={{ textShadow: `0 1px 3px rgba(0,0,0,0.8), 0 2px 6px ${treeColor}` }}
                       >
                         {q.text}
                       </motion.text>
@@ -302,7 +303,7 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
                     style={{ cursor: 'pointer', pointerEvents: 'auto' }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/graph?q=${encodeURIComponent(q.text)}&color=${encodeURIComponent(color)}`);
+                      router.push(`/graph?q=${encodeURIComponent(q.text)}&color=${encodeURIComponent(treeColor)}`);
                     }}
                   />
                 </g>
@@ -348,10 +349,10 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
             
             {/* Base Root / Flow */}
             <motion.circle
-              cx="200" cy="350" r="4" fill={color}
+              cx="200" cy="350" r="4" fill={treeColor}
               initial={{ opacity: 0 }}
               animate={{ opacity: isHovered || isDetailMode ? 1 : 0.5 }}
-              style={{ filter: `drop-shadow(0 0 10px ${color})` }}
+              style={{ filter: `drop-shadow(0 0 10px ${treeColor})` }}
             />
             {renderBranches(treeData, 0)}
           </motion.g>
@@ -388,8 +389,8 @@ export function KnowledgeTree({ domain, color, description, id, delay = 0, isDet
                   }}
                   className="cursor-pointer flex items-center gap-1.5 px-3 py-1 rounded-full backdrop-blur-md text-slate-700 text-[10px] font-medium tracking-widest transition-all shadow-sm border pointer-events-auto"
                   style={{
-                    backgroundColor: `${color}22`,
-                    borderColor: `${color}55`,
+                    backgroundColor: `${treeColor}22`,
+                    borderColor: `${treeColor}55`,
                   }}
                 >
                   <Plus size={10} />

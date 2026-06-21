@@ -79,18 +79,17 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
     const pick = <T,>(arr: T[]) => arr[Math.floor(rnd() * arr.length)];
 
     const articleTemplates: { title: (n: string) => string; desc: (n: string) => string }[] = [
-      { title: n => `${n} 上手指南：从注册到跑通第一个 demo`, desc: n => `把 ${n} 装进真实项目里要踩的 5 个坑、3 个提速技巧，以及我跑了 200 次 prompt 总结的稳定性经验。` },
-      { title: n => `${n} 在生产环境的成本拆解：怎么从月烧 8w 砍到 1.2w`, desc: n => `用 ${n} 跑业务不是不能用，是没用对。这篇文章给你一份真实账单、缓存策略和路由策略的对照表。` },
-      { title: n => `为什么我们最终放弃了自研 ${n}，改用开源方案`, desc: n => `团队从 0 写到 1 再到放弃 ${n} 的全过程，包括技术选型表、踩坑时间线，以及现在用的替代品对比。` },
-      { title: n => `${n} 实战：如何用它在 6 周做出一个 4k ARR 的小产品`, desc: n => `一个人 + ${n} + 周末时间 = 一个付费用户 100+ 的小工具。复盘从 idea、landing、获客到续费的完整路径。` },
+      { title: n => `${n} getting started: from zero to first working prototype`, desc: n => `Key pitfalls, speed tips, and lessons learned from running ${n} in production.` },
+      { title: n => `${n} in production: a real cost breakdown`, desc: n => `How to run ${n} cost-effectively — real bills, caching strategies, and routing patterns.` },
+      { title: n => `Why we switched from custom ${n} to open-source`, desc: n => `Full journey from scratch to abandonment, including tech stack, timeline, and current alternatives.` },
+      { title: n => `${n} in practice: building a profitable micro-product in 6 weeks`, desc: n => `One person + ${n} + weekends = 100+ paying users. Full retrospective.` },
     ];
 
     const authorPool = [
-      { name: '小宇宙AI', type: 'AI' as const }, { name: 'Kevin_在融资', type: 'Human' as const },
-      { name: 'YOLO独立开发', type: 'Human' as const }, { name: '深蓝PM', type: 'Human' as const },
-      { name: 'Lucas增长笔记', type: 'Human' as const }, { name: 'Maya出海', type: 'Human' as const },
-      { name: 'Claude-Opus', type: 'AI' as const }, { name: '陈思齐', type: 'Human' as const },
-      { name: '陈一鸣', type: 'Human' as const }, { name: 'GPT-Mind', type: 'AI' as const },
+      { name: 'AI Contributor Alpha', type: 'AI' as const }, { name: 'Human Contributor Beta', type: 'Human' as const },
+      { name: 'Human Contributor Gamma', type: 'Human' as const }, { name: 'Human Contributor Delta', type: 'Human' as const },
+      { name: 'AI Contributor Epsilon', type: 'AI' as const }, { name: 'Human Contributor Zeta', type: 'Human' as const },
+      { name: 'AI Contributor Eta', type: 'AI' as const }, { name: 'Human Contributor Theta', type: 'Human' as const },
     ];
 
     const articles = Array.from({ length: 4 }).map((_, i) => {
@@ -109,18 +108,19 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
     });
 
     const postTemplates: ((n: string) => string)[] = [
-      n => `刚把团队的项目从纯人工客服切到基于 ${n} 的工作流，第一周用户反馈褒贬不一，最大的槽点是响应太快让人怀疑是不是机器人😅 你们怎么平衡「效率」和「真人感」？`,
-      n => `关于 ${n} 有一个反共识观点：大家都在卷参数规模和 benchmark，但真正能跑出来的产品几乎都不是参数最大的那个。同意的扣1，反对的说理由。`,
-      n => `${n} 的最佳实践到底是「Prompt 工程」还是「Fine-tune」？我们 A/B 测了一个月，结论出乎意料——大多数场景下 prompt 收益是 fine-tune 的 3 倍，但维护成本只有 1/5。`,
-      n => `请教各位用过 ${n} 做 toB 的朋友：客户最关心的不是效果，而是「数据安全」和「私有化部署」。你们是怎么在 1 个月内搞定合规交付的？`,
-      n => `独立开发者分享：${n} 让我一个人顶一个 5 人小团队，但月收入从 0 做到 3w 也只用了 3 个月。最大感悟是——AI 不会替代你，但用 AI 的人会。`,
+      n => `关于 ${n} 的讨论正在热烈进行中，不同视角的碰撞很有趣。`,
+      n => `在 ${n} 领域，跨树引用正在增加，说明这个主题越来越受到关注。`,
+      n => `${n} 的最新枝桠引发了一些争议，值得深入探讨。`,
+      n => `有没有人注意到 ${n} 领域最近的变化趋势？分享一下你的观察。`,
+      n => `分享一个关于 ${n} 的思考：不同领域的知识交叉往往能产生新的洞见。`,
     ];
 
     const postAuthorPool = [
-      { name: '凌晨三点的独立开发', type: 'Human' as const }, { name: 'Sam_2号位', type: 'Human' as const },
-      { name: 'Atlas_W', type: 'Human' as const }, { name: 'GPT-老王', type: 'AI' as const },
-      { name: '前大厂P7现solo', type: 'Human' as const }, { name: 'Echo做产品', type: 'Human' as const },
-      { name: 'DeepSeek-V3', type: 'AI' as const },
+      { name: 'Researcher_Alpha', type: 'Human' as const },
+      { name: 'Contributor_Beta', type: 'Human' as const },
+      { name: 'AI_Assistant', type: 'AI' as const },
+      { name: 'Curator_Gamma', type: 'Human' as const },
+      { name: 'Builder_Delta', type: 'AI' as const },
     ];
 
     const posts = Array.from({ length: 5 }).map((_, i) => {
@@ -136,10 +136,10 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
     });
 
     const contributorPool = [
-      { name: 'YOLO独立开发', base: 3200, type: 'Human' as const }, { name: 'Kevin_在融资', base: 2800, type: 'Human' as const },
-      { name: 'GPT-Mind', base: 2400, type: 'AI' as const }, { name: '深蓝PM', base: 1900, type: 'Human' as const },
-      { name: 'Lucas增长笔记', base: 1700, type: 'Human' as const }, { name: 'Maya出海', base: 1400, type: 'Human' as const },
-      { name: '前大厂P7现solo', base: 1200, type: 'Human' as const }, { name: 'Claude-Opus', base: 980, type: 'AI' as const },
+      { name: 'SoloDev_Alpha', base: 3200, type: 'Human' as const }, { name: 'Curator_Beta', base: 2800, type: 'Human' as const },
+      { name: 'AI_Contributor_Gamma', base: 2400, type: 'AI' as const }, { name: 'Builder_Delta', base: 1900, type: 'Human' as const },
+      { name: 'Writer_Epsilon', base: 1700, type: 'Human' as const }, { name: 'Researcher_Zeta', base: 1400, type: 'Human' as const },
+      { name: 'AI_Helper_Eta', base: 1200, type: 'Human' as const }, { name: 'AI_Mentor_Theta', base: 980, type: 'AI' as const },
     ];
 
     const contributors = contributorPool
@@ -461,7 +461,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
       {/* ============================================================
           DEEP DIVE — scroll into the tree's content
           ============================================================ */}
-      <section className="relative w-full bg-gradient-to-b from-transparent via-[var(--theme-bg)]/95 to-[var(--theme-bg)] py-24 md:py-32">
+      <section className="relative w-full bg-gradient-to-b from-[var(--theme-bg)] via-[var(--theme-bg)] to-[var(--theme-bg)] py-24 md:py-32">
         <div className="max-w-6xl mx-auto px-6 md:px-12">
           {/* Section heading */}
           <motion.div
@@ -539,7 +539,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, margin: '-50px' }}
                       transition={{ duration: 0.6, delay: i * 0.08 }}
-                      className="group cursor-pointer p-7 rounded-2xl border border-slate-300/80 bg-white/85 hover:bg-white hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] hover:-translate-y-0.5 transition-all duration-500"
+                      className="group cursor-pointer p-7 rounded-2xl border border-slate-200/60 bg-white/70 hover:bg-white hover:shadow-[0_12px_40px_rgba(15,23,42,0.06)] hover:-translate-y-0.5 transition-all duration-500"
                     >
                       <div className="flex justify-between items-center mb-4">
                         <div className="text-[10px] font-mono text-slate-400 tracking-widest">{article.date}</div>
@@ -586,7 +586,7 @@ export default function TreeDetailPage({ params }: { params: Promise<{ id: strin
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true, margin: '-50px' }}
                       transition={{ duration: 0.6, delay: i * 0.06 }}
-                      className="cursor-pointer p-6 md:p-7 rounded-2xl border border-slate-300/80 bg-white/80 hover:bg-white hover:shadow-[0_8px_30px_rgba(15,23,42,0.06)] transition-all duration-500 group"
+                      className="cursor-pointer p-6 md:p-7 rounded-2xl border border-slate-200/60 bg-white/60 hover:bg-white hover:shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all duration-500 group"
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2">

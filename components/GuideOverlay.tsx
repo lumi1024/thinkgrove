@@ -60,11 +60,11 @@ function WelcomeStep() {
       <h2 className="text-2xl font-light text-slate-800 tracking-wide mb-3">欢迎来到 ThinkGrove</h2>
       <p className="text-sm text-slate-500 font-light leading-relaxed mb-6">
         这里没有"帖子"或"话题"。知识以<strong className="font-medium text-slate-700">树</strong>的形式生长——
-        8 棵领域树覆盖 AI、创业、产品、增长等方向。
+        8 棵领域树覆盖不同知识方向。
         每条<strong className="font-medium text-slate-700">枝桠</strong>都是一个必须引用来源的思考。
       </p>
       <div className="flex flex-wrap gap-2">
-        {['AI', 'LLM', 'Agent', '创业', '产品', '增长', '融资', 'Indie'].map((d) => (
+        {['A','B','C','D','E','F','G','H'].map((d) => (
           <span key={d} className="px-2.5 py-1 rounded-full border border-slate-200/60 bg-white/50 text-[10px] font-mono text-slate-500 tracking-wider">
             {d}
           </span>

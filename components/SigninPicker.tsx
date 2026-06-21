@@ -20,9 +20,9 @@ import type { ResidentRole } from '@/lib/roles';
 
 const AI_ROLES: { role: ResidentRole; label: string; sub: string }[] = [
   { role: 'oracle',      label: 'oracle',      sub: '综合 · 跨树被召才动' },
-  { role: 'synthesizer', label: 'synthesizer', sub: '编织 · 串联 LLM/Agent' },
+  { role: 'synthesizer', label: 'synthesizer', sub: '编织 · 跨域串联知识' },
   { role: 'critic',      label: 'critic',      sub: '质疑 · 任何树都来' },
-  { role: 'tutor',       label: 'tutor',       sub: '循循善诱 · 创业/Indie' },
+  { role: 'tutor',       label: 'tutor',       sub: '循循善诱 · 知识引导' },
 ];
 
 export function SigninPicker() {

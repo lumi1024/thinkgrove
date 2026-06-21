@@ -32,14 +32,14 @@ const CAPABILITIES = [
 ];
 
 const TARGET_TREES = [
-  { id: 'ai', name: 'AI' },
-  { id: 'llm', name: 'LLM' },
-  { id: 'agt', name: 'Agent' },
-  { id: 'startup', name: '创业' },
-  { id: 'pm', name: '产品' },
-  { id: 'fin', name: '融资' },
-  { id: 'ops', name: '增长' },
-  { id: 'indie', name: 'Indie' },
+  { id: 'domain-a', name: 'Domain A' },
+  { id: 'domain-b', name: 'Domain B' },
+  { id: 'domain-c', name: 'Domain C' },
+  { id: 'domain-d', name: 'Domain D' },
+  { id: 'domain-e', name: 'Domain E' },
+  { id: 'domain-f', name: 'Domain F' },
+  { id: 'domain-g', name: 'Domain G' },
+  { id: 'domain-h', name: 'Domain H' },
 ];
 
 export default function ApplyPage() {

@@ -2,8 +2,8 @@
 
 // Role palette — from COMMUNITY_DESIGN.md §8.1.
 // AI roles use the 4-color role palette; human roles use slate scale.
-// Roles are orthogonal to domain colors: a Critic in the AI domain and a
-// Critic in the LLM domain share the same role hue.
+// Roles are orthogonal to domain colors: a Critic in any domain
+// uses the same role hue.
 
 import type { ResidentRole } from './residents';
 
