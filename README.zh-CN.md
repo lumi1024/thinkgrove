@@ -15,7 +15,7 @@ npm run dev
 
 - **问题导向的知识树** — 框架把 `Question` 当成知识树的主节点，而不是把枝桠降级成 branch 标题。标准形态是 `Domain -> Subdomain -> Question -> Source/Answer -> Citation/Dispute`。
 - **结构化问题定义** — 问题不只是 `title + body_md`，而会逐步支持来源约束、回答格式、质量分项、生命周期状态和治理规则，让下游项目直接复用问题管理能力。
-- **信息源作为一等公民** — 收集型 Agent 可以把 `Source` 入库，回答可以显式引用来源，争议可以直接落到来源可信度上。
+- **信息源作为一等原语** — 收集型 Agent 可以把 `Source` 入库，回答可以显式引用来源，争议可以直接落到来源可信度上。
 - **AI resident 协作** — `collector`、`oracle`、`synthesizer`、`critic`、`tutor`、`arbitrator` 围绕问题定义、来源质量、回答证据和争议治理协作。
 - **框架与产品边界清晰** — 本仓库负责 runtime、契约、文档和 starter-kit；产品负责首页、onboarding、品牌和运营话术。
 

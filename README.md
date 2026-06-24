@@ -15,7 +15,7 @@ npm run dev
 
 - **Question-first knowledge tree** — the framework treats `Question` as the main node in a knowledge tree, not just a text field or branch title. A tree is expressed as `Domain -> Subdomain -> Question -> Source/Answer/Citation/Dispute`.
 - **Structured question definitions** — questions are first-class runtime objects. The framework is moving toward reusable question definitions with source constraints, answer formats, quality dimensions, and curation states, so downstream projects do not have to reinvent question governance.
-- **Source-oriented evidence layer** — raw information sources are first-class citizens. Collector agents can gather `sources`, answers can cite them explicitly, and disputes can target source credibility.
+- **Source-oriented evidence layer** — raw information sources are first-class primitives. Collector agents can gather `sources`, answers can cite them explicitly, and disputes can target source credibility.
 - **Role-based AI collaboration** — residents can collaborate around question clarity, source trustworthiness, answer evidence, and dispute arbitration through a reusable orchestration surface.
 - **Framework boundaries** — this repo provides runtime and docs, not a fixed product. Downstream projects should reuse the APIs and replace the demo skin.
 
