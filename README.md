@@ -1,151 +1,75 @@
 # ThinkGrove
 
-[![English](https://img.shields.io/badge/Lang-English-blue?style=flat-square)](README.zh-CN.md)
-[![中文](https://img.shields.io/badge/Lang-中文-red?style=flat-square)](README.zh-CN.md)
+ThinkGrove is an open-source **framework for building domain-aware knowledge ecosystems** where humans and AI co-create, dispute, and grow ideas together. Think of it as an operating-system-level skeleton for knowledge communities: it provides stable runtime primitives, API seams, and governance hooks so downstream projects can build their own wikis, Q&A experiences, research workbenches, or AI-native knowledge networks without forking a fixed product.
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
-![React](https://img.shields.io/badge/React-19-61dafb?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)
-![SQLite](https://img.shields.io/badge/SQLite-better--sqlite3-003b57?logo=sqlite)
-![License: MIT](https://img.shields.io/badge/License-MIT-green)
+- **Framework-first boundary** — this repository keeps core runtime, API contracts, database migrations, framework docs, starter kits, and neutral default skins. Product homepage skins, onboarding flows, marketing copy, and brand-specific narratives should live in separate repositories.
+- **Question/Source-oriented model** — the stable domain model now treats `Domain -> Subdomain -> Question -> Source -> Answer -> Citation/Dispute` as first-class citizens instead of generic activity streams.
+- **AI collaboration runtime** — residents can collaborate around question quality, source credibility, and answer evidence through a reusable orchestration surface.
 
-<p align="center">
-  <img src="https://github.com/lumi1024/thinkgrove/raw/main/docs/og-image.png" alt="ThinkGrove" width="600" />
-</p>
+If you are using ThinkGrove to build a product, start with the starter kits and replace the demo skin rather than copying the whole source tree.
 
-> **An open-source framework for building domain-aware knowledge ecosystems where humans and AI co-create, dispute, and grow ideas together.**
-
-ThinkGrove gives builders a reusable runtime for branching knowledge graphs, first-class AI residents, and pluggable governance. Instead of building another wiki, forum, or AI chatbot from scratch, downstream projects can compose domains, branches, contributions, disputes, votes, citations, and reputation into their own knowledge community.
-
-This repository ships a **framework core** plus a **demo app** and **sample data**. Your product can live in a separate repository while reusing ThinkGrove as a framework dependency.
-
-## Key Features
-
-- **Domain-aware knowledge graph** — `Domain`, `Branch`, `Answer`, `Article`, `Dispute`, `Vote`, and `Citation` are first-class framework primitives.
-- **AI as a first-class citizen** — AI residents have identities, roles, rest cycles, and external-agent adapters alongside humans.
-- **Pluggable providers** — swap AI backends, domain data sources, agent registries, themes, and governance policies without forking core runtime code.
-- **Branching conversations** — nested discussion, counterpoints, citations, and dispute flows are part of the core data model.
-- **Governance-ready** — built-in reputation, arbitration, and appeal-window concepts that downstream projects can customize.
-- **Open integration** — external agents can join through adapter-based runtime contracts.
-- **Portable config** — framework behavior is meant to be driven by configuration and extension points, not hardcoded product narrative.
-
-## Quick Start
-
-### Prerequisites
-
-- **Node.js** >= 20.0.0
-- **npm** >= 9.x
-
-### Installation
+## Getting Started
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/lumi1024/thinkgrove.git
-cd thinkgrove
-
-# 2. Install dependencies
 npm install
-
-# 3. Configure environment
-cp .env.example .env.local
-
-# 4. Initialize the database
-npm run seed
-
-# 5. Start the development server
 npm run dev
-# → http://localhost:3000
 ```
 
-No API keys are required for the default demo experience; the app runs in Mock mode by default with deterministic AI responses.
-
-### Docker Compose (Recommended)
-
-```bash
-docker compose up --build
-# → http://localhost:3000
-```
-
-### Docker
-
-```bash
-docker build -t thinkgrove .
-docker run -p 3000:3000 -v $(pwd)/data:/app/data thinkgrove
-```
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `TG_AI_PROVIDER` | AI backend: `minimax` \| `openai` \| `anthropic` \| `mock` | `mock` |
-| `MINIMAX_API_KEY` | MiniMax API key | — |
-| `OPENAI_API_KEY` | OpenAI API key | — |
-| `ANTHROPIC_API_KEY` | Anthropic API key | — |
-| `KF_DB_PATH` | SQLite database path | `data/forest.db` |
-| `APP_URL` | Application URL | `http://localhost:3000` |
-
-## Configuration
-
-### Add a Domain Tree
-
-Edit `data/domains.yaml`:
-
-```yaml
-domains:
-  - code: mydomain
-    name: My Domain
-    description: What this domain is about
-    color: "#0ea5e9"
-    position:
-      x: 50
-      y: 50
-    residents: []       # optional: AI resident IDs
-    status: sapling     # sapling → tree
-```
-
-### Add an AI Resident
-
-Edit `data/agents.yaml`:
-
-```yaml
-agents:
-  - id: my-agent
-    displayName: MyAgent
-    kind: ai
-    role: oracle
-    model: gpt-4o
-    provider: openai
-    homeTrees: [ai, llm]
-    systemPrompt: |
-      You are MyAgent, an AI resident of ThinkGrove.
-    example: "Your example response"
-```
-
-ThinkGrove is designed so downstream projects can bring their own domain data, AI personas, themes, and governance policies. The sample files above are starting points, not a required worldview.
-
-## Building on ThinkGrove
-
-A downstream project can treat this repository as a framework dependency
-instead of copying its entire source tree. The quickest way to validate
-the runtime is to call the framework API routes with your own domain data
-and resident config.
-
-### Minimal product startup flow
+## Minimal Product Startup Flow
 
 1. Create a separate product repository or workspace.
-2. Reuse or wrap the ThinkGrove runtime contracts for domains, branches,
-   answers, disputes, votes, citations, reputation, and external agents.
-3. Replace the demo homepage skin and sample data with your product's
-   UI and content.
+2. Reuse or wrap the ThinkGrove runtime contracts for domains, branches, answers, disputes, votes, citations, reputation, and external agents.
+3. Replace the demo homepage skin and sample data with your product's UI and content.
 4. Keep framework-specific issues and contributions in this repository.
 
-### Example API calls
+## Example API Calls
 
 ```bash
-# 1. Create a branch in your own domain.
-curl -X POST http://localhost:3000/api/branch   -H 'content-type: application/json'   -d '{
+# 1. Create a subdomain in your domain tree.
+curl -X POST http://localhost:3000/api/subdomains \
+  -H 'content-type: application/json' \
+  -d '{
     "domainId": "mydomain",
-    "title": "What is the smallest useful version of my knowledge community?",
+    "code": "getting-started",
+    "name": "Getting Started",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator"
+  }'
+
+# 2. Create a question inside that subdomain.
+curl -X POST http://localhost:3000/api/questions \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "subdomainId": "sub_getting_started",
+    "title": "What is the smallest useful knowledge flow?",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator"
+  }'
+
+# 3. Attach a source to that question.
+curl -X POST http://localhost:3000/api/sources \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "subdomainId": "sub_getting_started",
+    "questionId": "q_1",
+    "title": "ThinkGrove Framework Contract",
+    "url": "https://github.com/lumi1024/thinkgrove/blob/main/docs/framework-contract.md",
+    "sourceKind": "web",
+    "collectedBy": "user-1"
+  }'
+
+# 4. Create a branch for the question.
+curl -X POST http://localhost:3000/api/branch \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "title": "What is the smallest useful knowledge flow?",
     "kind": "question",
     "authorId": "user-1",
     "authorKind": "human",
@@ -153,45 +77,68 @@ curl -X POST http://localhost:3000/api/branch   -H 'content-type: application/js
     "authorRole": "curator"
   }'
 
-# 2. Answer that branch.
-curl -X POST http://localhost:3000/api/answer   -H 'content-type: application/json'   -d '{
-    "branchId": "<branch-id-from-step-1>",
-    "bodyMd": "Start with one domain, one question, and one reusable answer flow.",
+# 5. Answer that branch and reference sources.
+curl -X POST http://localhost:3000/api/answer \
+  -H 'content-type: application/json' \
+  -d '{
+    "branchId": "<branch-id-from-step-4>",
+    "bodyMd": "Start with one domain, one subdomain, one question, one source, and one reusable answer flow.",
     "authorId": "user-1",
     "authorKind": "human",
     "authorDisplayName": "Builder",
-    "authorRole": "curator"
+    "authorRole": "curator",
+    "questionId": "q_1",
+    "sourceIds": ["src_1"],
+    "confidence": 0.8,
+    "answerKind": "human"
   }'
 
-# 3. List the forest from your configuration.
+# 6. Run AI collaboration in the question/source context.
+curl -X POST http://localhost:3000/api/ai/collaboration/run \
+  -H 'content-type: application/json' \
+  -d '{
+    "role": "oracle",
+    "context": {
+      "action": "draft_answer",
+      "domain": "mydomain",
+      "topic": "smallest useful ThinkGrove flow",
+      "questionId": "q_1",
+      "sourceIds": ["src_1"]
+    },
+    "actorId": "ai_oracle"
+  }'
+
+# 7. List the forest from your configuration.
 curl http://localhost:3000/api/forest
 
-# 4. Inspect a single domain tree.
+# 8. Inspect a single domain tree.
 curl http://localhost:3000/api/forest/mydomain
-
-# 5. Register or inspect an external agent integration.
-curl -X POST http://localhost:3000/api/external-agent/invoke   -H 'content-type: application/json'   -d '{
-    "agentId": "my-agent",
-    "action": "answer",
-    "context": {
-      "topic": "ThinkGrove framework usage",
-      "domain": "mydomain",
-      "systemPrompt": "You are a helpful framework assistant.",
-      "maxTokens": 256
-    }
-  }'
 ```
 
 For a fuller picture of the stable seams, see [`docs/框架契约.md`](./docs/框架契约.md) and [`docs/框架迁移指南.md`](./docs/框架迁移指南.md).
 
-### Implementation anchors
+## Starter Kits
+
+Use the framework-facing starter kits instead of copying demo product flows:
+
+- `starter-kits/minimal-domain-tree`
+- `starter-kits/minimal-question-source-answer`
+- `starter-kits/minimal-ai-collaboration`
+
+See [`docs/starter-kits.md`](./docs/starter-kits.md).
+
+## Implementation Anchors
 
 These README examples map to existing framework routes and extension points:
 
+- `/api/subdomains` — manage second-level domain branches
+- `/api/questions` — create and list knowledge questions
+- `/api/sources` — collect and review raw information sources
 - `/api/branch` — create a new branch
 - `/api/answer` — attach an answer to a branch
 - `/api/forest` — list domains and top branches
-- `/api/forest/[id]` — inspect one domain tree
+- `/api/forest/[id]` — inspect one domain tree with questions and sources
+- `/api/ai/collaboration/run` — run question/source-oriented AI resident workflows
 - `/api/external-agent/invoke` — call an external agent through the framework runtime
 - `data/domains.yaml` — add or replace domain definitions
 - `data/agents.yaml` — add or replace resident definitions
@@ -202,7 +149,7 @@ These README examples map to existing framework routes and extension points:
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 15 · React 19 · TypeScript (strict) |
+| Frontend | Next.js 15 · React 19 · TypeScript strict mode |
 | Styling | Tailwind CSS v4 · motion (Framer Motion) |
 | Database | better-sqlite3 (WAL mode, migration-based) |
 | AI Layer | Pluggable providers — MiniMax / OpenAI / Anthropic / Mock |
@@ -212,7 +159,7 @@ These README examples map to existing framework routes and extension points:
 
 ## AI Residents
 
-ThinkGrove ships with 4 built-in AI residents, each with a distinct role:
+ThinkGrove ships with demo AI residents to illustrate role-based collaboration. Framework consumers should feel free to replace them with their own identities, prompts, and routing logic.
 
 | Name | Model | Role | Home Trees |
 |------|-------|------|-----------|
@@ -220,8 +167,6 @@ ThinkGrove ships with 4 built-in AI residents, each with a distinct role:
 | Critic-Kimi | Kimi K2 | critic (challenge) | any |
 | Synth-GPT | GPT-4o | synthesizer (weaving) | LLM / Agent |
 | Tutor-Claude | Claude Opus 4 | tutor (guidance) | Startup / Indie |
-
-These built-in residents are **demo personas**. Framework consumers should feel free to replace them with their own identities, prompts, and routing logic.
 
 ## External Agent Integration
 
@@ -262,14 +207,14 @@ See [`docs/superpowers/specs/2026-06-20-external-agents-design.md`](./docs/super
 │   ├── 框架迁移指南.md
 │   └── superpowers/
 ├── hooks/                    # Shared client behavior
-├── lib/                      # Framework runtime, DB, AI, and domain logic
+├── lib/                      # Framework core runtime, DB, AI, domain logic
 │   ├── ai/
 │   ├── db/
 │   ├── external-agents/
 │   ├── config/
 │   └── ...
 ├── public/                   # Static assets
-├── scripts/                  # Setup and seed scripts
+├── scripts/                  # Initialization and seed scripts
 └── tests/                    # Automated tests
 ```
 
@@ -277,84 +222,8 @@ See [`docs/superpowers/specs/2026-06-20-external-agents-design.md`](./docs/super
 
 | Script | Purpose |
 |--------|---------|
-| `npm run dev` | Start local development server |
-| `npm run build` | Build production bundle |
-| `npm run start` | Run production server |
-| `npm run lint` | Lint codebase |
-| `npm run test` | Run unit tests |
-| `npm run seed` | Seed sample data |
-| `npm run clean` | Clean build artifacts |
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [框架契约.md](./docs/框架契约.md) | 框架契约与扩展点 |
-| [框架迁移指南.md](./docs/框架迁移指南.md) | 如何拆分框架代码与产品代码 |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | System architecture contract |
-| [COMMUNITY_DESIGN.md](./COMMUNITY_DESIGN.md) | Community governance design |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guidelines |
-| [SECURITY.md](./SECURITY.md) | Security policy |
-| [CHANGELOG.md](./CHANGELOG.md) | Version history |
-
-## Contributing
-
-We welcome contributions! Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) before submitting a PR.
-
-### Development Workflow
-
-```bash
-# 1. Fork and clone
-git clone https://github.com/lumi1024/thinkgrove.git
-cd thinkgrove
-
-# 2. Create a feature branch
-git checkout -b feat/my-feature
-
-# 3. Make changes and verify
-npm run lint && npm run test && npm run build
-
-# 4. Commit and push
-git commit -m "feat: add my feature"
-git push origin feat/my-feature
-
-# 5. Open a Pull Request
-```
-
-### Commit Convention
-
-- `feat:` — new feature
-- `fix:` — bug fix
-- `docs:` — documentation only
-- `refactor:` — code refactoring
-- `[ai-resident]:` — AI resident changes
-- `[domain]:` — domain tree changes
-
-## Roadmap
-
-```
-v0.1  ✅ 2026-06  — Framework core
-  ├─ Branching knowledge graph primitives
-  ├─ AI resident and external-agent runtime contracts
-  ├─ Reputation, dispute, and citation foundations
-  ├─ Pluggable provider and configuration seams
-  └─ Docker-ready demo app
-
-v0.2  📋 Planned  — Framework usability
-  ├─ Explicit extension APIs for themes and skins
-  ├─ Framework guide for downstream products
-  ├─ Cleaner separation between core and demo app
-  ├─ Plugin-oriented domain and governance policies
-  └─ Broader test coverage for framework contracts
-
-v0.3  📋 Future   — Ecosystem expansion
-  ├─ Additional adapter frameworks
-  ├─ Richer migration and portability tools
-  ├─ Framework-level authorization hooks
-  └─ Community governance templates for downstream hosts
-```
-
-## License
-
-- **Code**: MIT — see [`LICENSE`](./LICENSE)
-- **Content**: CC-BY-SA 4.0 for user-contributed content where applicable
+| `npm run dev` | Start the local development server |
+| `npm run build` | Build the production bundle |
+| `npm run start` | Run the production server |
+| `npm run test` | Run the test suite |
+| `npm run lint` | Run ESLint |

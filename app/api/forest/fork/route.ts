@@ -44,6 +44,7 @@ export async function POST(req: Request) {
         created_by: b.created_by,
         created_at: b.created_at,
         body_md: b.body_md,
+        question_id: null,
       });
     }
 

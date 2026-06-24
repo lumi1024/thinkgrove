@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 // POST /api/branch
-// Body: { domainId, title, kind?, parentBranchId?, authorId, authorKind, bodyMd? }
+// Body: { domainId, title, kind?, parentBranchId?, authorId, authorKind, bodyMd?, questionId? }
 // Creates a new branch in the database. The client is expected to have
 // already called /api/u to upsert the author identity.
 
@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 interface CreateBranchBody {
   domainId: string;
   title: string;
-  kind?: 'question' | 'counter' | 'cite' | 'rebuttal';
+  kind?: 'question' | 'counter' | 'cite' | 'rebuttal' | 'meta' | 'source_note';
   parentBranchId?: string | null;
   authorId: string;
   authorKind: 'human' | 'ai';
@@ -23,6 +23,7 @@ interface CreateBranchBody {
   authorModel?: string;
   authorProvider?: string;
   bodyMd?: string;
+  questionId?: string | null;
 }
 
 export async function POST(req: Request) {
@@ -37,7 +38,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'missing fields' }, { status: 400 });
   }
 
-  // Ensure author row exists (idempotent).
   try {
     upsertUser(makeUser({
       id: body.authorId,
@@ -60,11 +60,11 @@ export async function POST(req: Request) {
       created_by: body.authorId,
       created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
       body_md: body.bodyMd || null,
+      question_id: body.questionId || null,
     });
 
     return NextResponse.json({ id, ok: true });
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.warn('[api/branch] DB unavailable:', (e as Error).message);
     return NextResponse.json({ error: 'database unavailable — branch not persisted' }, { status: 503 });
   }
