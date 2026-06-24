@@ -227,3 +227,474 @@
    会丢失知乎式问答结构，framework 价值会下降。
 3. 如果 AI collaboration 不绑定 question/source metadata，
    后面 resident 角色会重新变回 demo persona。
+
+## 阶段二：问题定义方式与知识树形态框架化
+
+> 范围：本仓库当前 `knowledge-processing-capabilities` 分支；继续坚持 framework-first，不加入产品首页、onboarding、固定运营话术。
+> 状态：待确认后进入实现。当前阶段只更新计划与方案，不改动实现代码。
+
+### 背景与问题诊断
+
+当前已经完成了第一阶段的 primitives 落地：`subdomains`、`questions`、`sources`、`answers`、`citations`、`disputes`、`ai/collaboration` 已经进框架。下一步不是继续堆接口，而是把“知识树形态”和“问题定义方式”从演示页里的视觉隐喻，收敛成稳定框架契约。
+
+当前存在三个核心问题：
+
+1. 知识树展示仍是 `branch.title` 叶子，`question` 没有被真正作为枝桠节点。
+2. 问题定义只有文本字段，缺少结构化 schema、质量分项、来源约束、状态机。
+3. tree/graph 页面是 demo 叙事，缺少 question-first 的 API 契约和渲染协议。
+
+如果不先解决这三个问题，后续的 AI collaboration、curation、dispute 都会继续挂在“枝桠标题”这种不稳定表达上。
+
+### 第二阶段核心价值
+
+对内一句话：
+ThinkGrove 的下一个核心框架化目标，是把“知识树”收敛为 `Domain -> Subdomain -> Question -> Source/Answer` 的标准形态，同时把“问题定义”做成可复用、可校验、可治理的一等 runtime 原语。
+
+对外一句话：
+ThinkGrove 不只是知识社区骨架，而是“问题定义 + 知识树形态 + 信息源治理”三层可配置框架，让下游项目能直接复用标准问答树，而不必各自 reinvent 问题管理和知识组织。
+
+### 设计原则
+
+1. question-first：树节点、线程、回答、信息源、引用、争议都要能回溯到 question。
+2. schema-first：问题定义要有结构化 schema，而不只是 title + body_md。
+3. runtime-only：框架只定义结构和 API，不定义产品级树形皮肤。
+4. extensible curation：下游可扩展问题状态机、校验规则、评分维度，但核心流程由框架保证。
+5. stable seam：知识树形态、问题定义、tree/graph API 都要成为稳定的 downstream 接缝。
+
+### 知识树形态方案
+
+#### 1. 当前形态
+
+- 根：`domain`
+- 二级分支：`subdomain` 已有模型，但 tree/graph 页面基本没作为稳定节点使用
+- 枝桠：`branch.title`，其中一部分是 question，一部分是 answer/counter/cite/rebuttal/meta/source_note
+- 信息源：`sources` 已有一等模型，但树页面没有作为标准节点暴露
+- 关系：`citations`、`disputes`、`votes` 已有，但树形展示没有形成标准边
+
+#### 2. 目标形态
+
+`Domain -> Subdomain -> Question -> Source/Answer/Citation/Dispute`
+
+其中：
+
+- `Domain`：领域根节点，保持 color、status、position、description
+- `Subdomain`：二级领域节点，保持 code、name、status、position
+- `Question`：枝桠主节点，不是 branch title
+- `Branch`：问题下的线程/回答/质疑/引用/元讨论
+- `Answer`：branch 下的可采纳回答，同时索引到 question
+- `Source`：问题下的底层信息源
+- `Citation`：answer/branch/question/source 之间的引用边
+- `Dispute`：answer/source 的治理边
+- `Vote`：争议与可信度信号
+- `Article`：领域级聚合产物，不作为树形枝桠，而作为知识产物
+
+#### 3. 树形展示契约
+
+框架只定义最小展示契约，不定义具体皮肤：
+
+- 一级展示：domain
+- 二级展示：subdomain
+- 三级展示：question
+- 四级展示：source、answer、citation、dispute
+- 节点元数据：至少包含 id、kind、title、status、quality_score、created_at、last_activity_at
+- 边元数据：至少包含 relation、created_at、from_id、to_id
+- 默认排序：subdomain 按 position/code；question 按 last_activity_at/quality_score；source 按 created_at；answer 按 confidence/created_at
+
+#### 4. Graph 展示契约
+
+graph 页应从“问题概念云”收敛为“问题知识网络”：
+
+- 根节点：一个 question
+- 一层关联：subdomain、source、canonical answer
+- 二层关联：citation、dispute、counter、rebuttal
+- 边类型：cite、dispute、rewrite、adopted
+- 可选扩展：downstream product 可继续加 agent、user、article 边，但框架默认只暴露 question-first 核心边
+
+### 问题定义方式方案
+
+#### 1. 当前问题
+
+当前 `questions` 只支持：
+
+- title
+- body_md
+- source_requirements
+- open / canonical / quality_score
+
+缺少：
+
+- 问题类型
+- 结构化前置条件
+- 来源约束组合
+- 回答格式约束
+- 质量分项
+- 状态机
+- 审计与治理字段
+
+这导致问题定义仍然依赖人和产品的“口头约定”，无法被框架复用。
+
+#### 2. 目标定义方式
+
+把问题定义拆成五层：
+
+1. 基础层
+2. 约束层
+3. 质量层
+4. 状态层
+5. 审计层
+
+#### 3. 基础层
+
+- `statement`
+- `context`
+- `domain_id`
+- `subdomain_id`
+- `question_type`：`exploratory`、`comparison`、`causal`、`procedural`、`factual`、`normative`
+- `difficulty`：`beginner`、`intermediate`、`advanced`
+- `language`
+- `visibility`：`draft`、`internal`、`public`
+
+基础层用于表达“这是什么问题、属于哪个领域、面向谁、难度如何”。
+
+#### 4. 约束层
+
+- `required_source_kinds`：例如 `["web", "paper"]`
+- `required_source_count`
+- `required_source_authority_min`
+- `required_answer_format`：例如 `markdown`、`bullets`、`claim+evidence+uncertainty`
+- `forbidden_phrases`
+- `min_confidence`
+- `max_answer_length`
+
+约束层用于规范“回答这个问题需要哪些信息源、不能怎么写”。
+
+#### 5. 质量层
+
+- `quality_score`
+- `precision`
+- `answerability`
+- `verifiability`
+- `non_redundancy`
+- `scope_fit`
+
+质量层用于让问题可比较、可排序、可治理。
+
+#### 6. 状态层
+
+建议状态机：
+
+- `draft`
+- `validating`
+- `open`
+- `frozen`
+- `merged`
+- `archived`
+
+转换规则建议：
+
+- `draft -> validating`：问题创建后自动或由 tutor/critic 触发
+- `validating -> open`：满足最小来源约束和质量门禁
+- `open -> frozen`：达到最高质量回答、或 curator 冻结
+- `frozen -> merged`：主结论被采纳到 article/canonical answer
+- `open/frozen/merged -> archived`：过期、重复、无效
+
+框架负责定义状态机，产品可以扩展，但不能删除核心状态。
+
+#### 7. 审计层
+
+- `created_by`
+- `created_at`
+- `last_activity_at`
+- `curated_by`
+- `curation_rule_id`
+- `schema_version`
+- `labels`
+
+审计层用于保证问题定义可追溯、可复盘、可迁移。
+
+### Question Definition Schema
+
+```ts
+interface QuestionDefinition {
+  schema_version: string;
+  statement: string;
+  context?: string;
+  domain_id: string;
+  subdomain_id?: string;
+  question_type: QuestionType;
+  difficulty?: Difficulty;
+  language?: string;
+  visibility: Visibility;
+
+  required_source_kinds?: SourceKind[];
+  required_source_count?: number;
+  required_source_authority_min?: number;
+  required_answer_format?: string;
+  forbidden_phrases?: string[];
+  min_confidence?: number;
+  max_answer_length?: number;
+
+  quality_score?: number;
+  precision?: number;
+  answerability?: number;
+  verifiability?: number;
+  non_redundancy?: number;
+  scope_fit?: number;
+
+  status: QuestionStatus;
+  labels?: string[];
+  curated_by?: string;
+  curation_rule_id?: string;
+  created_by: string;
+  created_at: string;
+  last_activity_at: string;
+}
+```
+
+配套枚举：
+
+```ts
+type QuestionType =
+  | 'exploratory'
+  | 'comparison'
+  | 'causal'
+  | 'procedural'
+  | 'factual'
+  | 'normative';
+
+type Difficulty = 'beginner' | 'intermediate' | 'advanced';
+
+type Visibility = 'draft' | 'internal' | 'public';
+
+type QuestionStatus =
+  | 'draft'
+  | 'validating'
+  | 'open'
+  | 'frozen'
+  | 'merged'
+  | 'archived';
+
+type SourceKind =
+  | 'web'
+  | 'paper'
+  | 'report'
+  | 'internal'
+  | 'external_api';
+```
+
+### 下一阶段 3 个核心能力
+
+#### 1. QuestionFactory
+
+职责：
+
+- 定义问题 schema
+- 校验问题定义是否满足框架最小要求
+- 计算问题质量分项
+- 支持下游扩展模板
+
+为什么重要：
+如果问题定义不做成工厂，后面所有 tree、collaboration、curation 都会退化成“文本约定”。
+
+交付物：
+
+- `lib/questions/schema.ts`
+- `lib/questions/validator.ts`
+- `lib/questions/factory.ts`
+- `lib/questions/quality.ts`
+
+#### 2. QuestionTreeRuntime
+
+职责：
+
+- 定义知识树的标准返回形状
+- 把 `domain -> subdomain -> question -> source/answer/citation/dispute` 作为标准查询契约
+- 支持 tree 页和 graph 页复用同一 shape
+- 不绑定具体 UI，只绑定数据结构
+
+为什么重要：
+现在 tree/graph 还是 demo 数据驱动，不是 runtime 驱动；这会限制 downstream product 的树形表达。
+
+交付物：
+
+- `lib/db/repos/questions.ts` 扩展
+- `app/api/forest/route.ts` 改为 question-first
+- `app/api/forest/[id]/route.ts` 返回 subdomains + questions + sources + answers
+- `app/graph/page.tsx` 改为 question-first graph 契约
+
+#### 3. CurationRuntime
+
+职责：
+
+- 管理 question 状态机
+- 在状态变化时触发 resident collaboration
+- 校验来源约束、回答置信度、争议仲裁
+- 生成可审计 curation log
+
+为什么重要：
+没有 curation runtime，问题质量、来源质量、回答质量就无法系统化，只能靠产品层各自实现。
+
+交付物：
+
+- `lib/questions/curation.ts`
+- `lib/ai/collaboration.ts` 扩展 question/source trigger
+- `app/api/questions/route.ts` 增加 validate/transition
+- `docs/框架契约.md` 增加 question definition / tree shape / curation 章节
+
+### API 修订建议
+
+#### `/api/forest`
+
+从“热门枝桠列表”改为：
+
+```ts
+interface ForestResponse {
+  domains: Array<{
+    id: string;
+    name: string;
+    color: string;
+    description: string;
+    subdomainCount: number;
+    openQuestionCount: number;
+    topQuestions: Array<{
+      id: string;
+      title: string;
+      status: string;
+      quality_score: number;
+      last_activity_at: string;
+    }>;
+  }>;
+}
+```
+
+#### `/api/forest/[id]`
+
+从“branch + article”改为：
+
+```ts
+interface TreeResponse {
+  domain: Domain;
+  subdomains: Subdomain[];
+  questions: QuestionSummary[];
+  sources: SourceSummary[];
+  answers: AnswerSummary[];
+  citations: CitationSummary[];
+  disputes: DisputeSummary[];
+}
+```
+
+#### `/api/questions`
+
+扩展为：
+
+- `GET /api/questions?domainId=&subdomainId=&status=&type=`
+- `POST /api/questions` 增加 schema 校验
+- `POST /api/questions/validate` 校验问题定义
+- `POST /api/questions/:id/transition` 状态流转
+
+#### `/api/graph`
+
+从“概念云”收敛为：
+
+- `GET /api/graph?questionId=&depth=`
+- 返回 question 为中心的知识网络
+
+### Starter Kit 修订
+
+#### 1. minimal-domain-tree
+
+保持现有 kit，但强调：
+
+- `subdomain` 是标准二级领域节点
+- `position` 和 `code` 用于树形排序
+- 不要在产品层再发明二级分类结构
+
+#### 2. minimal-question-definition
+
+新增 kit，说明：
+
+- 如何用框架定义一个问题
+- 如何设置 source_requirements
+- 如何定义 question_type
+- 如何做最小 validation
+
+#### 3. minimal-question-tree
+
+新增 kit，说明：
+
+- 如何请求 `/api/forest/[id]`
+- 如何渲染 domain -> subdomain -> question -> source/answer
+- 如何按状态、质量、活跃度排序
+
+#### 4. minimal-question-graph
+
+新增 kit，说明：
+
+- 如何请求 `/api/graph?questionId=...`
+- 如何渲染 question 为中心的知识网络
+- 如何处理 citation / dispute / source 边
+
+### 任务清单
+
+1. 新增 question definition schema：`lib/questions/schema.ts`
+2. 新增 validator：`lib/questions/validator.ts`
+3. 新增 factory：`lib/questions/factory.ts`
+4. 新增 quality scoring：`lib/questions/quality.ts`
+5. 扩展 question repo：`lib/db/repos/questions.ts`
+6. 新增 migration：`lib/db/migrations/006_question_definition.sql`
+7. 扩展 `/api/forest`：question-first 列表
+8. 扩展 `/api/forest/[id]`：返回 subdomains + questions + sources + answers
+9. 新增 `/api/graph`：question-first graph API
+10. 收敛 `KnowledgeTree` 展示契约，但不绑定产品皮肤
+11. 收敛 `app/graph/page.tsx` 为 question graph
+12. 扩展 collaboration trigger：`lib/ai/collaboration.ts`
+13. 新增 curation runtime：`lib/questions/curation.ts`
+14. 更新契约文档：`docs/框架契约.md`
+15. 更新迁移指南：`docs/框架迁移指南.md`
+16. 新增 starter kits：`docs/starter-kits.md`、`starter-kits/minimal-question-definition`、`starter-kits/minimal-question-tree`、`starter-kits/minimal-question-graph`
+17. 更新 README：`README.md`、`README.zh-CN.md`
+18. 补充测试：`__tests__/questions/schema.test.ts`、`__tests__/questions/validator.test.ts`、`__tests__/questions/curation.test.ts`、`__tests__/routes.test.ts`
+19. 验证：`npm run test && npm run build`
+
+### 验收标准
+
+- 框架层可明确表达知识树形态：`Domain -> Subdomain -> Question -> Source/Answer -> Citation/Dispute`
+- Question 有结构化定义、来源约束、质量分项、状态机、审计字段。
+- Tree API 和 Graph API 都变成 question-first。
+- AI resident 可围绕 question 状态、source 质量、answer 证据触发协作。
+- 下游项目可依据 starter-kit 在 30 分钟内搭出 question-first 知识树。
+- 没有新增固定产品首页、固定运营流程、固定日报文案。
+
+### 明确不做什么
+
+- 不做固定树形产品皮肤
+- 不做单一产品的 onboarding
+- 不做固定运营话术
+- 不做脱离 question/source 结构的泛化知识图谱
+- 不做日报/周报模板
+- 不把 graph 做成脱离 question 的概念云
+
+### 关键风险与缓解
+
+1. 如果问题定义继续只有 title/body_md，后面 tree 和 collaboration 会继续飘。
+   - 缓解：先做 schema，再做 API，再做 UI。
+2. 如果 tree/graph 继续用 demo 数据，会限制 downstream product。
+   - 缓解：统一 forest/graph API shape，作为 stable seam。
+3. 如果 curation 没有状态机，问题质量会退化成人治。
+   - 缓解：框架内置最小状态机，产品可扩展，不能删除。
+
+### 建议的第一批实现顺序
+
+1. `lib/questions/schema.ts` + migration
+2. `lib/questions/validator.ts` + factory
+3. `lib/db/repos/questions.ts` 扩展
+4. `/api/questions` 增加 validate/transition
+5. `/api/forest/[id]` 改为 question-first
+6. `/api/graph` 改为 question-first
+7. `docs/框架契约.md` + starter-kits
+8. README 与测试
+
+### 当前分支
+
+- 当前分支：`knowledge-processing-capabilities`
+- 先继续在这个分支实现，不新建产品分支。
