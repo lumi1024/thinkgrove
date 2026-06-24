@@ -1,5 +1,20 @@
 # ThinkGrove
 
+ThinkGrove 是一个开源的 **问题导向知识生态框架**：它不交付一套固定的 Wiki、论坛或聊天机器人产品，而是为下游项目提供可复用的 runtime，标准知识形态是 `Domain -> Subdomain -> Question -> Branch -> Answer`，其中 `Source` 是一等证据对象，`Citation / Dispute / Vote / Reputation` 是治理原语。
+
+## 标准知识形态
+
+```
+Domain
+└── Subdomain
+    └── Question
+        ├── Branch / Answer
+        ├── Source  (证据对象)
+        ├── Citation
+        └── Dispute / Vote / Reputation
+```
+
+
 ThinkGrove 是一个用于构建“问题导向知识生态”的开源框架：让人类和 AI 在领域树、问题、回答、引用、争议与治理这些稳定结构原语上，以信息源作为一等证据对象共同生长知识，而不是交付一套固定的社区产品。
 
 本仓库按 **框架优先** 维护：保留核心 runtime、API 契约、数据库迁移、框架文档、starter-kit 和中性默认皮肤。产品首页、onboarding、营销页和品牌叙事应放在独立仓库。
@@ -222,6 +237,19 @@ ThinkGrove 提供框架级外部 Agent 集成接口。
 所有接入都必须经过 **宿主项目的审核**，不会自动批准。敏感凭据不会写入公开可见的 YAML 配置。
 
 详见 [`docs/superpowers/specs/2026-06-20-external-agents-design.md`](./docs/superpowers/specs/2026-06-20-external-agents-design.md) 与 [`docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md`](./docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md)。
+
+## 适用对象
+
+- 正在构建问答知识社区、研究工具、AI-native knowledge base 或领域推理产品的团队。
+- 希望获得可配置后端能力的产品团队：问题治理、信息源收集、回答综合、争议仲裁。
+- 希望拥有自己 UI、品牌和内容策略，但不想重复造知识 runtime 的开发者和产品团队。
+
+## 行动建议
+
+- 使用 starter-kits 快速启动一个 question-first knowledge runtime。
+- 通过配置扩展 domains、agents、themes，而不是 fork 核心逻辑。
+- 把框架改进留在本仓库；把产品叙事放在外部。
+
 
 ## 仓库结构
 

@@ -1,5 +1,20 @@
 # ThinkGrove
 
+ThinkGrove is an open-source **question-first knowledge ecosystem framework**: instead of delivering a fixed wiki, forum, or chatbot product, it gives downstream projects a reusable runtime for `Domain -> Subdomain -> Question -> Branch -> Answer`, with `Source` as a first-class evidence object and `Citation / Dispute / Vote / Reputation` as governance primitives.
+
+## Standard knowledge shape
+
+```
+Domain
+└── Subdomain
+    └── Question
+        ├── Branch / Answer
+        ├── Source  (evidence object)
+        ├── Citation
+        └── Dispute / Vote / Reputation
+```
+
+
 ThinkGrove is an open-source **framework for building question-first knowledge ecosystems** where humans and AI co-create, dispute, and grow ideas together. It is designed as an operating-system-level skeleton for knowledge communities: instead of delivering a fixed wiki, forum, or chatbot product, ThinkGrove provides stable tree primitives for `Domain -> Subdomain -> Question -> Branch -> Answer`, with `Source` as a first-class evidence object, plus reusable API seams, governance hooks, and AI collaboration surfaces.
 
 This repository is **framework-first**. It keeps core runtime, database migrations, API contracts, framework docs, starter kits, and neutral default skins. Product skins, onboarding flows, marketing copy, and brand-specific narratives should live in separate repositories.
@@ -221,6 +236,19 @@ These README examples map to existing framework routes and extension points:
 | Config | YAML (domains.yaml, agents.yaml) |
 | Testing | Vitest |
 | Deployment | Docker multi-stage build |
+
+## Who should use ThinkGrove
+
+- Teams building Q&A knowledge communities, research workbenches, AI-native knowledge bases, or domain-specific reasoning tools.
+- Developers who want a configurable backend for question governance, source collection, answer synthesis, and dispute arbitration.
+- Product teams that want to own their UI, brand, and content strategy without rebuilding core knowledge-runtime logic.
+
+## Call to action
+
+- Use the starter kits to bootstrap a question-first knowledge runtime.
+- Extend domains, agents, and themes through config instead of forking core logic.
+- Keep framework improvements in this repo; keep product narratives outside.
+
 
 ## Repository Structure
 
