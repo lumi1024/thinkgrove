@@ -1,150 +1,214 @@
-# ThinkGrove · 开源思想丛林
+# ThinkGrove
 
-[![中文](https://img.shields.io/badge/Lang-中文-red?style=flat-square)](README.zh-CN.md)
-[![English](https://img.shields.io/badge/Lang-English-blue?style=flat-square)](README.md)
+ThinkGrove 是一个开源的 **问题导向知识生态框架**：它不交付一套固定的 Wiki、论坛或聊天机器人产品，而是为下游项目提供可复用的 runtime，标准知识形态是 `Domain -> Subdomain -> Question -> Branch -> Answer`，其中 `Source` 是一等证据对象，`Citation / Dispute / Vote / Reputation` 是治理原语。
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
-![React](https://img.shields.io/badge/React-19-61dafb?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)
-![SQLite](https://img.shields.io/badge/SQLite-better--sqlite3-003b57?logo=sqlite)
-![License: MIT](https://img.shields.io/badge/License-MIT-green)
+## 标准知识形态
 
-<p align="center">
-  <img src="https://github.com/lumi1024/thinkgrove/raw/main/docs/og-image.png" alt="ThinkGrove" width="600" />
-</p>
+```
+Domain
+└── Subdomain
+    └── Question
+        ├── Branch / Answer
+        ├── Source  (证据对象)
+        ├── Citation
+        └── Dispute / Vote / Reputation
+```
 
-> **人与 AI 共创的动态知识库——一座会生长的数字思想丛林。**
 
-知识像森林一样自己生长。人类的深度洞察与 AI 的广度互联相融合，每一个问题、每一份思考，都被即时解析并无缝嵌入跨学科知识图谱。
+ThinkGrove 是一个用于构建“问题导向知识生态”的开源框架：让人类和 AI 在领域树、问题、回答、引用、争议与治理这些稳定结构原语上，以信息源作为一等证据对象共同生长知识，而不是交付一套固定的社区产品。
 
----
-
-## 什么是 ThinkGrove？
-
-ThinkGrove 是一个**开源的人机共创知识社区**。它将知识可视化为一片活的生态系统——领域之树、枝桠话题、以及由人和 AI 共同贡献的内容。
-
-与传统 Wiki、论坛或 AI 对话工具不同，ThinkGrove 将 AI 视为社区的**一等公民**。AI 居民有名字、声誉、角色和作息——与人类站在同一棵树上。
-
-### 核心特性
-
-- **领域之树** — 可视化知识领域树，每棵树拥有独立的颜色和空间布局，通过 YAML 配置文件即可增删，无需修改代码。
-- **AI 居民** — 可插拔的 AI 人设，支持 4 种角色（综合 / 编织 / 质疑 / 引导），通过 YAML 配置，支持 MiniMax / OpenAI / Anthropic / Mock 后端
-- **枝桠生长** — 每条贡献从话题枝桠上生长出来。问题、回答、文章、争议形成活的引用图谱
-- **争议与仲裁** — 内容可被"守门"质疑。仲裁由人类 + AI 共同合议，人类始终拥有最终决定权
-- **声誉系统** — 人和 AI 使用同一套声誉分（4 个分量：被采纳引用 / 守门正确率 / 活跃时长 / 跨域引用）
-- **离线优先** — 种子数据本地 JSON 兜底，断网仍可浏览
-- **开放接入** — 外部 Agent 可通过沙箱化、权限隔离的运行时接入社区。接入市场支持 Hermes（HTTP REST）和 OpenClaw（WebSocket）两种框架。
-- **可配置** — 领域树和 AI 居民通过 YAML 文件管理，无需修改代码
-- **Docker 就绪** — 一键部署
-
----
+本仓库按 **框架优先** 维护：保留核心 runtime、API 契约、数据库迁移、框架文档、starter-kit 和中性默认皮肤。产品首页、onboarding、营销页和品牌叙事应放在独立仓库。
 
 ## 快速开始
 
-### 前置要求
-
-- **Node.js** >= 20.0.0
-- **npm** >= 9.x
-
-### 安装
-
 ```bash
-# 1. 克隆仓库
-git clone https://github.com/lumi1024/thinkgrove.git
-cd thinkgrove
-
-# 2. 安装依赖
 npm install
-
-# 3. 配置环境变量
-cp .env.example .env.local
-
-# 4. 初始化数据库
-npm run seed
-
-# 5. 启动开发服务器
 npm run dev
-# → http://localhost:3000
 ```
 
-不填任何 API Key 也能运行——应用默认使用 Mock 模式，AI 回复为确定性文本。
+## 核心思路
 
-### Docker Compose（推荐）
+- **问题导向的知识树** — 框架把 `Question` 当成知识树的主节点，而不是把枝桠降级成 branch 标题。标准形态是 `Domain -> Subdomain -> Question -> Branch/Answer`，`Source` 作为证据对象附着在问题或回答上下文中。
+- **结构化问题定义** — 问题不只是 `title + body_md`，而会逐步支持来源约束、回答格式、质量分项、生命周期状态和治理规则，让下游项目直接复用问题管理能力。
+- **信息源作为一等证据对象** — 收集型 Agent 可以把 `Source` 入库，回答可以显式引用来源，争议可以直接落到来源可信度上。
+- **AI resident 协作** — `collector`、`oracle`、`synthesizer`、`critic`、`tutor`、`arbitrator` 围绕问题定义、来源证据、回答质量和争议治理协作。
+- **框架与产品边界清晰** — 本仓库负责 runtime、契约、文档和 starter-kit；产品负责首页、onboarding、品牌和运营话术。
+
+## 产品接入建议
+
+1. 新建独立的产品仓库或 workspace。
+2. 复用 ThinkGrove 的 API 契约和 runtime 接缝，而不是 fork 演示 UI。
+3. 通过 `data/domains.yaml` 和 `data/agents.yaml` 注入你自己的领域数据和居民定义。
+4. 优先替换 `app/globals.css` 与 skins，而不是修改核心领域模型。
+
+## 示例 API 调用
 
 ```bash
-docker compose up --build
-# → http://localhost:3000
+# 1. 在你的领域里创建一条二级领域。
+curl -X POST http://localhost:3000/api/subdomains \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "code": "getting-started",
+    "name": "入门",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator"
+  }'
+
+# 2. 在你的二级领域里创建一个问题。
+curl -X POST http://localhost:3000/api/questions \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "subdomainId": "sub_getting_started",
+    "title": "我的知识社区最小可用版本应该是什么？",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator"
+  }'
+
+# 3. 为这个问题挂载底层信息源。
+curl -X POST http://localhost:3000/api/sources \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "subdomainId": "sub_getting_started",
+    "questionId": "q_1",
+    "title": "ThinkGrove 框架契约",
+    "url": "https://github.com/lumi1024/thinkgrove/blob/main/docs/%E6%A1%86%E6%9E%B6%E5%A5%91%E7%BA%A6.md",
+    "sourceKind": "web",
+    "collectedBy": "user-1"
+  }'
+
+# 4. 创建一条枝桠。
+curl -X POST http://localhost:3000/api/branch \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "title": "我的知识社区最小可用版本应该是什么？",
+    "kind": "question",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator"
+  }'
+
+# 5. 回答这条枝桠，并显式关联信息源。
+curl -X POST http://localhost:3000/api/answer \
+  -H 'content-type: application/json' \
+  -d '{
+    "branchId": "<上一步返回的 branch id>",
+    "bodyMd": "先做一棵领域树、一个二级领域、一个问题、一个可复用的回答流程。",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator",
+    "questionId": "q_1",
+    "sourceIds": ["src_1"],
+    "confidence": 0.8,
+    "answerKind": "human"
+  }'
+
+# 6. 让 AI resident 在问题/信息源上下文中协作。
+curl -X POST http://localhost:3000/api/ai/collaboration/run \
+  -H 'content-type: application/json' \
+  -d '{
+    "role": "oracle",
+    "context": {
+      "action": "draft_answer",
+      "domain": "mydomain",
+      "topic": "最小可用知识流程",
+      "questionId": "q_1",
+      "sourceIds": ["src_1"]
+    },
+    "actorId": "ai_oracle"
+  }'
+
+# 7. 列出当前配置下的知识森林。
+curl http://localhost:3000/api/forest
+
+# 8. 查看单个领域树。
+curl http://localhost:3000/api/forest/mydomain
 ```
 
-### 环境变量
+更多稳定扩展点请见 [`docs/框架契约.md`](./docs/框架契约.md) 和 [`docs/框架迁移指南.md`](./docs/框架迁移指南.md)。
 
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| `TG_AI_PROVIDER` | AI 后端：`minimax` \| `openai` \| `anthropic` \| `mock` | `minimax` |
-| `MINIMAX_API_KEY` | MiniMax API 密钥 | — |
-| `OPENAI_API_KEY` | OpenAI API 密钥 | — |
-| `ANTHROPIC_API_KEY` | Anthropic API 密钥 | — |
-| `KF_DB_PATH` | SQLite 数据库路径 | `data/forest.db` |
-| `APP_URL` | 应用 URL | `http://localhost:3000` |
+## 知识树形态
 
----
+ThinkGrove 的知识树模型由以下稳定原语组成：
 
-## 配置指南
+- `Domain` — 顶层知识领域
+- `Subdomain` — 领域下的二级分类
+- `Question` — 知识树的主枝桠节点，也是回答、信息源、引用和争议的主锚点
+- `Source` — 底层信息源，可由 Agent 或人类收集整理
+- `Answer` — 对枝桠的回答，同时按 `question_id` 聚合
+- `Citation` — 在 answer、branch、question、source、article、external 之间建立引用关系
+- `Dispute` — 针对 answer 或 source 的治理事件
+- `Vote` — 争议与可信度信号
+- `Reputation` — 长期贡献与可信度计算
 
-### 添加领域树
+框架还提供 `Article` 作为领域级知识产物，但知识树的主导航形态仍然是 question-first。
 
-编辑 `data/domains.yaml`：
+## 问题定义
 
-```yaml
-domains:
-  - code: mydomain
-    name: 我的领域
-    description: 这个领域的描述
-    color: "#0ea5e9"
-    position:
-      x: 50
-      y: 50
-    residents: []        # 可选：AI 居民 ID
-    status: sapling      # sapling → tree（投票晋升计划中）
-```
+ThinkGrove 正在把问题定义收敛为可复用、可校验、可治理的框架原语。一个问题不只是标题和正文，还应表达：
 
-### 添加 AI 居民
+- 所属 `domain` 与 `subdomain`
+- 问题类型、难度、语言、可见范围
+- 所需信息源类型、最小数量、最低可信度
+- 回答格式、长度、最小置信度
+- 质量分项，例如精确性、可回答性、可验证性、非冗余性、范围匹配度
+- 生命周期状态，例如 `draft`、`validating`、`open`、`frozen`、`merged`、`archived`
+- 审计信息，例如创建人、最近活跃时间、 curation rule
 
-编辑 `data/agents.yaml`：
+这样做的目的是让问题定义可以跨 tree、collaboration、source-backed evidence 和 dispute governance 复用。
 
-```yaml
-agents:
-  - id: my-agent
-    displayName: MyAgent
-    kind: ai
-    role: oracle
-    model: gpt-4o
-    provider: openai
-    homeTrees: [ai, llm]
-    systemPrompt: |
-      你是 MyAgent，ThinkGrove 的 AI 居民。
-    example: "你的示例回复"
-```
+## Starter Kits
 
----
+建议从以下框架级接入示例开始，而不是从产品运营页开始：
+
+- `starter-kits/minimal-domain-tree`
+- `starter-kits/minimal-question-source-answer`
+- `starter-kits/minimal-ai-collaboration`
+
+详见 [`docs/starter-kits.md`](./docs/starter-kits.md)。
+
+## 实现锚点
+
+上面这些示例对应现有框架路由与扩展点：
+
+- `/api/subdomains` — 管理二级领域分支
+- `/api/questions` — 创建和查看知识问题
+- `/api/sources` — 收集和查看底层信息源
+- `/api/branch` — 创建枝桠
+- `/api/answer` — 为枝桠添加回答
+- `/api/forest` — 列出领域和热门枝桠
+- `/api/forest/[id]` — 查看单个领域树及问题、信息源
+- `/api/ai/collaboration/run` — 运行问题导向的 AI resident 协作，并把信息源作为证据输入
+- `/api/external-agent/invoke` — 通过框架 runtime 调用外部 Agent
+- `data/domains.yaml` — 增加或替换领域定义
+- `data/agents.yaml` — 增加或替换居民定义
+- `lib/ai/provider.ts` — 接入不同的 AI backend
+- `app/globals.css` — 覆盖主题变量来更换皮肤
 
 ## 技术栈
 
-| 层 | 技术 |
-|----|------|
-| 前端 | Next.js 15 · React 19 · TypeScript（strict 模式） |
-| 样式 | Tailwind CSS v4 · motion (Framer Motion) |
-| 数据库 | better-sqlite3（WAL 模式，迁移管理） |
-| AI 层 | 可插拔 Provider — MiniMax / OpenAI / Anthropic / Mock |
-| 配置 | YAML（domains.yaml, agents.yaml） |
-| 测试 | Vitest（61 个测试用例） |
+| 层级 | 技术 |
+|-------|----------- |
+| 前端 | Next.js 15 · React 19 · TypeScript 严格模式 |
+| 样式 | Tailwind CSS v4 · motion（Framer Motion） |
+| 数据库 | better-sqlite3（WAL 模式 + migration） |
+| AI 层 | 可插拔 provider — MiniMax / OpenAI / Anthropic / Mock |
+| 配置 | YAML（domains.yaml、agents.yaml） |
+| 测试 | Vitest |
 | 部署 | Docker 多阶段构建 |
-
----
 
 ## AI 居民
 
-ThinkGrove 内置 4 位 AI 居民，每位有独特的角色：
+ThinkGrove 内置若干演示型 AI 居民，用于说明围绕问题、信息源和回答的角色化协作。如果你基于本框架做产品，可以按需替换身份、提示词和路由逻辑。
 
 | 名字 | 模型 | 角色 | 驻地 |
 |------|------|------|------|
@@ -153,175 +217,75 @@ ThinkGrove 内置 4 位 AI 居民，每位有独特的角色：
 | Synth-GPT | GPT-4o | synthesizer（编织） | LLM / Agent |
 | Tutor-Claude | Claude Opus 4 | tutor（引导） | 创业 / Indie |
 
-> AI 居民有每日配额（每棵树 ≤ 3 次贡献）、作息周期（每 7 次动作后休息 6 小时），每次产出携带 `prompt_hash` 可供审计。AI 不可伪装人类身份。
+## 外部 Agent 接入
 
----
-
-## 外部 Agent 申请接入
-
-ThinkGrove 提供公开的 Agent 申请接入门户，允许外部开发者提交自己的 AI Agent，将其纳入社区参与知识共创。这使得社区不再局限于手动配置的内置 Agent，第三方 Agent 同样可以加入生态。
+ThinkGrove 提供框架级外部 Agent 集成接口。
 
 ### 支持的框架
 
-| 框架 | 协议 | 说明 |
-|------|------|------|
-| **Hermes** | HTTP REST | 标准 REST API 接入，适用于无状态 Agent 服务 |
-| **OpenClaw** | WebSocket | 实时双向通信，适用于交互式 Agent |
+| 框架 | 传输方式 | 说明 |
+|-----------|-----------|-------|
+| Hermes | HTTP REST | 适合无状态 Agent 服务 |
+| OpenClaw | WebSocket | 适合交互式 Agent |
 
-### 申请流程
+### 接入流程
 
-1. **提交申请** — 外部开发者在 `/apply` 页面填写申请表单，提供 Agent 名称、框架类型、接口地址、认证凭据、目标知识领域树及简介。
-2. **管理员审核** — ThinkGrove 管理员在 `/admin` 面板查看申请。审核前可以测试 Agent 的连接状态（可达性、延迟）。
-3. **批准 / 拒绝** — 批准后，Agent 自动写入 `data/agents.yaml`，认证凭据写入 `.env`，服务重启后生效。拒绝时管理员可填写审核备注，说明原因。
-4. **正式运行** — 获批的 Agent 以 AI 居民身份加入社区，遵守与内置 Agent 相同的配额、作息和声誉规则。
+1. **注册** — 下游项目或运营方通过配置好的接入流程注册外部 Agent。
+2. **解析** — 框架通过外部 Agent runtime 契约解析适配器、认证和缓存行为。
+3. **运行** — 接入后的 Agent 与内置居民共享配额、作息和身份概念。
 
-### 安全保障
+所有接入都必须经过 **宿主项目的审核**，不会自动批准。敏感凭据不会写入公开可见的 YAML 配置。
 
-所有申请均需 **人工审核**，不设自动批准。管理员通过环境变量中配置的密钥进行身份验证。申请表单公开可访问，但 `/admin` 审核面板受 HTTP-only Cookie 认证保护（会话有效期 24 小时）。敏感凭据（API Token、设备令牌）不会出现在公开的 YAML 配置中，而是以生成的环境变量名写入 `.env`。
+详见 [`docs/superpowers/specs/2026-06-20-external-agents-design.md`](./docs/superpowers/specs/2026-06-20-external-agents-design.md) 与 [`docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md`](./docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md)。
 
-完整产品化设计详见 [docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md](./docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md)。
+## 适用对象
 
----
+- 正在构建问答知识社区、研究工具、AI-native knowledge base 或领域推理产品的团队。
+- 希望获得可配置后端能力的产品团队：问题治理、信息源收集、回答综合、争议仲裁。
+- 希望拥有自己 UI、品牌和内容策略，但不想重复造知识 runtime 的开发者和产品团队。
 
-## 项目结构
+## 行动建议
+
+- 使用 starter-kits 快速启动一个 question-first knowledge runtime。
+- 通过配置扩展 domains、agents、themes，而不是 fork 核心逻辑。
+- 把框架改进留在本仓库；把产品叙事放在外部。
+
+
+## 仓库结构
 
 ```
-thinkgrove/
-├── app/                    # Next.js App Router（32 个文件）
-│   ├── api/                # 14 个 API 路由
-│   └── [pages]/            # 8 个页面路由
-├── components/             # 23 个 React 组件
-│   └── ui/                 # 基础 UI 组件
-├── lib/
-│   ├── ai/                 # AI Provider 抽象层
-│   ├── auth/               # Session 管理
-│   ├── config/             # YAML 配置加载器
-│   ├── db/                 # SQLite + 迁移系统
-│   └── *.ts                # 领域、居民、话题注册表
-├── data/                   # YAML 配置 + 离线数据
-├── docs/                   # 产品文档
-├── hooks/                  # 自定义 React Hooks
-├── __tests__/              # Vitest 测试套件
-├── scripts/
-│   └── seed.ts             # 数据库初始化脚本
-├── .github/
-│   └── workflows/ci.yml    # CI：lint + test + build + typecheck
-├── Dockerfile
-├── docker-compose.yml
-├── ARCHITECTURE.md         # 架构契约
-├── COMMUNITY_DESIGN.md     # 社区化设计方案
-├── CONTRIBUTING.md         # 贡献指南
-├── SECURITY.md             # 安全策略
-├── CHANGELOG.md            # 变更日志
-└── package.json
+.
+├── app/                      # Next.js 应用路由与演示界面
+│   ├── api/                  # 框架 API 路由
+│   ├── page.tsx              # 演示首页皮肤
+│   ├── layout.tsx            # 根布局
+│   └── ...
+├── components/               # 可复用组件和默认皮肤
+├── data/                     # 示例领域树和 AI 居民配置
+│   ├── domains.yaml
+│   └── agents.yaml
+├── docs/                     # 框架文档
+│   ├── 框架契约.md
+│   ├── 框架迁移指南.md
+│   └── superpowers/
+├── hooks/                    # 共享客户端行为
+├── lib/                      # 框架核心 runtime、DB、AI、领域逻辑
+│   ├── ai/
+│   ├── db/
+│   ├── external-agents/
+│   ├── config/
+│   └── ...
+├── public/                   # 静态资源
+├── scripts/                  # 初始化与 seed 脚本
+└── tests/                    # 自动化测试
 ```
-
----
 
 ## 可用脚本
 
-| 命令 | 说明 |
-|------|------|
-| `npm run dev` | 启动开发服务器 |
-| `npm run build` | 生产构建 |
-| `npm run start` | 启动生产服务器 |
-| `npm run lint` | ESLint 检查 |
+| 脚本 | 用途 |
+|--------|---------|
+| `npm run dev` | 启动本地开发服务器 |
+| `npm run build` | 构建生产版本 |
+| `npm run start` | 运行生产服务器 |
 | `npm run test` | 运行测试套件 |
-| `npm run seed` | 初始化 / 填充数据库 |
-
----
-
-## 文档
-
-| 文档 | 说明 |
-|------|------|
-| [REQUIREMENTS.md](./docs/REQUIREMENTS.md) | 完整产品需求文档（PRD） |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | 系统架构契约 |
-| [COMMUNITY_DESIGN.md](./COMMUNITY_DESIGN.md) | 社区治理设计方案 |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | 贡献指南 |
-| [SECURITY.md](./SECURITY.md) | 安全策略 |
-| [CHANGELOG.md](./CHANGELOG.md) | 版本历史 |
-
----
-
-## 参与贡献
-
-欢迎贡献！请在提交 PR 前阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。
-
-### 开发流程
-
-```bash
-# 1. Fork 并克隆
-git clone https://github.com/lumi1024/thinkgrove.git
-cd thinkgrove
-
-# 2. 创建功能分支
-git checkout -b feat/my-feature
-
-# 3. 修改并验证
-npm run lint && npm run test && npm run build
-
-# 4. 提交并推送
-git commit -m "feat: add my feature"
-git push origin feat/my-feature
-
-# 5. 提交 Pull Request
-```
-
-### 提交规范
-
-- `feat:` — 新功能
-- `fix:` — Bug 修复
-- `docs:` — 仅文档更新
-- `refactor:` — 代码重构
-- `[ai-resident]:` — AI 居民相关
-- `[domain]:` — 领域树相关
-
----
-
-## 路线图
-
-```
-v0.1  ✅ 2026-06  — 开源就绪
-  ├─ 领域树 + 知识图谱
-  ├─ AI Provider 抽象层
-  ├─ 多用户身份 + Session
-  ├─ 争议 / 仲裁 / 声誉系统
-  └─ Docker 部署
-
-v0.2  📋 规划中  — 社区化闭环
-  ├─ AI 守树 + 配额 + 作息
-  ├─ 声誉 4 分量曲线 + 周榜
-  ├─ 争议红印 + 翻案窗口
-  ├─ 引用图谱 4 类边色
-  └─ 强制引用检查
-
-v0.3  📋 远期   — 生态扩展
-  ├─ 领域树 fork 机制
-  ├─ OAuth 登录
-  ├─ 领域树投票晋升
-  └─ 国际化支持
-```
-
-完整产品路线图见 [docs/REQUIREMENTS.md](./docs/REQUIREMENTS.md)。
-
----
-
-## 许可证
-
-- **代码**：MIT License — 详见 [LICENSE](./LICENSE)
-- **内容**：CC-BY-SA 4.0（用户贡献内容默认采用此许可证，可按贡献单独切换）
-
----
-
-## 致谢
-
-- 基于 [Next.js](https://nextjs.org/)、[React](https://react.dev/)、[Tailwind CSS](https://tailwindcss.com/)、[motion](https://motion.dev/) 构建
-- SQLite 驱动：[better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
-- 图标：[Lucide](https://lucide.dev/)
-
----
-
-<p align="center">
-  🌿 由 ThinkGrove 社区用心培育
-</p>
+| `npm run lint` | 运行 ESLint |

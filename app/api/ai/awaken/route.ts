@@ -191,6 +191,7 @@ export async function POST(req: Request) {
       created_by: body.agentId,
       created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
       body_md: awakenBodyMd,
+      question_id: null,
     });
 
     // Ensure agent state row exists (for both internal and external agents).

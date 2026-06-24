@@ -34,7 +34,6 @@ export class OpenClawAdapter implements ExternalAgentAdapter {
     this.deviceToken = config.deviceToken;
     this.deviceId = config.deviceId;
     this.publicKey = config.publicKey;
-    // Eagerly start WS connection so dispose() can always close it
     try {
       this.connect().catch(() => {});
     } catch {
@@ -74,7 +73,7 @@ export class OpenClawAdapter implements ExternalAgentAdapter {
         },
         reject: (e) => {
           clearTimeout(timeout);
-          reject(e);
+          reject(e as Error);
         },
       });
 
@@ -105,12 +104,12 @@ export class OpenClawAdapter implements ExternalAgentAdapter {
     await this.connect();
   }
 
-  private async connect(): Promise<void> {
+  private connect(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       try {
         this.ws = new WebSocket(this.endpoint);
       } catch (e) {
-        reject(new Error(`WebSocket creation failed: ${(e as Error).message}`));
+        reject(e as Error);
         return;
       }
 
@@ -121,7 +120,7 @@ export class OpenClawAdapter implements ExternalAgentAdapter {
       const onMessage = (evt: MessageEvent) => {
         let msg: WSMessage;
         try {
-          msg = JSON.parse(evt.data as string) as WSMessage;
+          msg = JSON.parse(evt.data as unknown as string) as WSMessage;
         } catch {
           return;
         }
@@ -209,7 +208,7 @@ export class OpenClawAdapter implements ExternalAgentAdapter {
     if (!this.ws) return;
     this.ws.addEventListener('message', (evt: MessageEvent) => {
       let msg: WSMessage;
-      try { msg = JSON.parse(evt.data as string) as WSMessage; } catch { return; }
+      try { msg = JSON.parse(evt.data as unknown as string) as WSMessage; } catch { return; }
       for (const h of this.eventHandlers) h(msg);
     });
   }
@@ -219,21 +218,5 @@ export class OpenClawAdapter implements ExternalAgentAdapter {
       return `${req.context.domain} 域已经 24 小时没有新枝桠。请提出一个具体、开放、可能引发讨论的问题，30-80 字，不要寒暄。`;
     }
     return `请围绕「${req.context.topic}」给出一段 80-160 字的回答。领域：${req.context.domain}。不要寒暄。`;
-  }
-
-  async waitForConnect(timeout = 3000): Promise<void> {
-    const start = Date.now();
-    while (!this.connected && Date.now() - start < timeout) {
-      await this.ensureConnected();
-      if (!this.connected) await new Promise(r => setTimeout(r, 100));
-    }
-    if (!this.connected) throw new Error('did not connect within timeout');
-  }
-
-  onEvent(handler: (msg: WSMessage) => void): () => void {
-    this.eventHandlers.push(handler);
-    return () => {
-      this.eventHandlers = this.eventHandlers.filter(h => h !== handler);
-    };
   }
 }

@@ -61,7 +61,6 @@ export async function GET() {
       });
     return NextResponse.json({ domains: result, source: 'db' });
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.warn('[api/forest] DB unavailable, serving offline seed:', (e as Error).message);
     return NextResponse.json({ domains: buildOfflineResult(), source: 'offline' });
   }

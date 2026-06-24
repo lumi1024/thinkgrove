@@ -1,6 +1,6 @@
 export interface ExternalAgentRequest {
   agentId: string;
-  action: 'answer' | 'awaken';
+  action: string;
   context: {
     topic: string;
     domain: string;

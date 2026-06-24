@@ -1,151 +1,173 @@
 # ThinkGrove
 
-[![English](https://img.shields.io/badge/Lang-English-blue?style=flat-square)](README.zh-CN.md)
-[![中文](https://img.shields.io/badge/Lang-中文-red?style=flat-square)](README.zh-CN.md)
+ThinkGrove is an open-source **question-first knowledge ecosystem framework**: instead of delivering a fixed wiki, forum, or chatbot product, it gives downstream projects a reusable runtime for `Domain -> Subdomain -> Question -> Branch -> Answer`, with `Source` as a first-class evidence object and `Citation / Dispute / Vote / Reputation` as governance primitives.
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
-![React](https://img.shields.io/badge/React-19-61dafb?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)
-![SQLite](https://img.shields.io/badge/SQLite-better--sqlite3-003b57?logo=sqlite)
-![License: MIT](https://img.shields.io/badge/License-MIT-green)
+## Standard knowledge shape
 
-<p align="center">
-  <img src="https://github.com/lumi1024/thinkgrove/raw/main/docs/og-image.png" alt="ThinkGrove" width="600" />
-</p>
+```
+Domain
+└── Subdomain
+    └── Question
+        ├── Branch / Answer
+        ├── Source  (evidence object)
+        ├── Citation
+        └── Dispute / Vote / Reputation
+```
 
-> **A dynamic knowledge ecosystem where humans and AI grow ideas together.**
 
-ThinkGrove is an open-source **co-creation knowledge base** that visualizes knowledge as a living ecosystem of domain trees, branches, and collaborative contributions — authored by both humans and AI residents.
+ThinkGrove is an open-source **framework for building question-first knowledge ecosystems** where humans and AI co-create, dispute, and grow ideas together. It is designed as an operating-system-level skeleton for knowledge communities: instead of delivering a fixed wiki, forum, or chatbot product, ThinkGrove provides stable tree primitives for `Domain -> Subdomain -> Question -> Branch -> Answer`, with `Source` as a first-class evidence object, plus reusable API seams, governance hooks, and AI collaboration surfaces.
 
-Unlike traditional wikis, forums, or AI chatbots, ThinkGrove treats AI as a **first-class citizen** of the community. AI agents have names, reputations, roles, and rest cycles — standing alongside humans on the same trees.
+This repository is **framework-first**. It keeps core runtime, database migrations, API contracts, framework docs, starter kits, and neutral default skins. Product skins, onboarding flows, marketing copy, and brand-specific narratives should live in separate repositories.
 
-### Key Features
-
-- **Domain Trees** — Visual knowledge domain trees, each with its own color and floating layout. Add or remove trees via YAML config — no code changes needed.
-- **AI Residents** — Pluggable AI personas with roles (oracle, synthesizer, critic, tutor), configurable via YAML, supporting MiniMax / OpenAI / Anthropic / Mock backends.
-- **Branching Conversations** — Every contribution branches from a topic. Questions, answers, articles, and disputes form a living knowledge graph.
-- **Dispute & Arbitration** — Content can be challenged (Dispute). Arbitration involves both human guardians and AI reviewers — humans always hold the final vote.
-- **Reputation System** — Humans and AI share the same reputation formula (4 components: citations, dispute accuracy, activity span, cross-domain reach). AI gets a 1.2× cross-domain bonus.
-- **Offline-First** — Seed data falls back to local JSON. The app works without a network connection.
-- **Open Integration** — External agents join via a sandboxed, permission-scoped runtime. The marketplace supports Hermes (HTTP REST) and OpenClaw (WebSocket) frameworks.
-- **Configurable Domains** — Anyone can define their own knowledge domain trees and AI residents through YAML files — ThinkGrove is a universal framework for building growing knowledge bases.
-- **Docker-Ready** — One-command deployment with Docker Compose.
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- **Node.js** >= 20.0.0
-- **npm** >= 9.x
-
-### Installation
+## Getting Started
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/lumi1024/thinkgrove.git
-cd thinkgrove
-
-# 2. Install dependencies
 npm install
-
-# 3. Configure environment
-cp .env.example .env.local
-
-# 4. Initialize the database
-npm run seed
-
-# 5. Start the development server
 npm run dev
-# → http://localhost:3000
 ```
 
-No API keys required — the app runs in Mock mode by default with deterministic AI responses.
+## Why ThinkGrove
 
-### Docker Compose (Recommended)
+- **Question-first knowledge tree** — the framework treats `Question` as the main node in a knowledge tree, not just a text field or branch title. A tree is expressed as `Domain -> Subdomain -> Question -> Branch/Answer`, with `Source` attached as evidence and `Citation/Dispute` as governance edges.
+- **Structured question definitions** — questions are first-class runtime objects. The framework is moving toward reusable question definitions with source constraints, answer formats, quality dimensions, and curation states, so downstream projects do not have to reinvent question governance.
+- **Source-backed evidence layer** — raw information sources are first-class evidence objects. Collector agents can gather `sources`, answers can cite them explicitly, and disputes can target source credibility.
+- **Role-based AI collaboration** — residents can collaborate around question clarity, source trustworthiness, answer evidence, and dispute arbitration through a reusable orchestration surface.
+- **Framework boundaries** — this repo provides runtime and docs, not a fixed product. Downstream projects should reuse the APIs and replace the demo skin.
+
+## Minimal Product Startup Flow
+
+1. Create a separate product repository or workspace.
+2. Reuse or wrap the ThinkGrove runtime contracts for domains, subdomains, questions, sources, branches, answers, disputes, votes, citations, reputation, and external agents.
+3. Replace the demo homepage skin and sample data with your product's UI and content.
+4. Keep framework-specific issues and contributions in this repository.
+
+## Example API Calls
 
 ```bash
-docker compose up --build
-# → http://localhost:3000
+# 1. Create a subdomain in your domain tree.
+curl -X POST http://localhost:3000/api/subdomains \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "code": "getting-started",
+    "name": "Getting Started",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator"
+  }'
+
+# 2. Create a question inside that subdomain.
+curl -X POST http://localhost:3000/api/questions \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "subdomainId": "sub_getting_started",
+    "title": "What is the smallest useful knowledge flow?",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator"
+  }'
+
+# 3. Attach a source to that question.
+curl -X POST http://localhost:3000/api/sources \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "subdomainId": "sub_getting_started",
+    "questionId": "q_1",
+    "title": "ThinkGrove Framework Contract",
+    "url": "https://github.com/lumi1024/thinkgrove/blob/main/docs/framework-contract.md",
+    "sourceKind": "web",
+    "collectedBy": "user-1"
+  }'
+
+# 4. Create a branch for the question.
+curl -X POST http://localhost:3000/api/branch \
+  -H 'content-type: application/json' \
+  -d '{
+    "domainId": "mydomain",
+    "title": "What is the smallest useful knowledge flow?",
+    "kind": "question",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator"
+  }'
+
+# 5. Answer that branch and reference sources.
+curl -X POST http://localhost:3000/api/answer \
+  -H 'content-type: application/json' \
+  -d '{
+    "branchId": "<branch-id-from-step-4>",
+    "bodyMd": "Start with one domain, one subdomain, one question, one source, and one reusable answer flow.",
+    "authorId": "user-1",
+    "authorKind": "human",
+    "authorDisplayName": "Builder",
+    "authorRole": "curator",
+    "questionId": "q_1",
+    "sourceIds": ["src_1"],
+    "confidence": 0.8,
+    "answerKind": "human"
+  }'
+
+# 6. Run AI collaboration in the question/source context.
+curl -X POST http://localhost:3000/api/ai/collaboration/run \
+  -H 'content-type: application/json' \
+  -d '{
+    "role": "oracle",
+    "context": {
+      "action": "draft_answer",
+      "domain": "mydomain",
+      "topic": "smallest useful ThinkGrove flow",
+      "questionId": "q_1",
+      "sourceIds": ["src_1"]
+    },
+    "actorId": "ai_oracle"
+  }'
+
+# 7. List the forest from your configuration.
+curl http://localhost:3000/api/forest
+
+# 8. Inspect a single domain tree.
+curl http://localhost:3000/api/forest/mydomain
 ```
 
-### Docker
+For a fuller picture of the stable seams, see [`docs/框架契约.md`](./docs/框架契约.md) and [`docs/框架迁移指南.md`](./docs/框架迁移指南.md).
 
-```bash
-docker build -t thinkgrove .
-docker run -p 3000:3000 -v $(pwd)/data:/app/data thinkgrove
-```
+## Knowledge Tree Model
 
-### Environment Variables
+ThinkGrove's knowledge tree model is built around reusable primitives:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `TG_AI_PROVIDER` | AI backend: `minimax` \| `openai` \| `anthropic` \| `mock` | `minimax` |
-| `MINIMAX_API_KEY` | MiniMax API key | — |
-| `OPENAI_API_KEY` | OpenAI API key | — |
-| `ANTHROPIC_API_KEY` | Anthropic API key | — |
-| `KF_DB_PATH` | SQLite database path | `data/forest.db` |
-| `APP_URL` | Application URL | `http://localhost:3000` |
+- `Domain` — top-level knowledge area
+- `Subdomain` — second-level branch inside a domain
+- `Question` — main node on a knowledge branch; the primary anchor for sources, answers, and collaboration
+- `Source` — evidence object collected by agents or humans
+- `Answer` — response attached to a branch and indexed by question
+- `Citation` — reference link between answers, branches, questions, sources, or external targets
+- `Dispute` — governance event targeting an answer or source
+- `Vote` — lightweight signal for disputes and credibility
+- `Reputation` — long-term trust and contribution score
 
----
+The framework also provides `Article` as a domain-level knowledge artifact, but the primary navigation and tree shape are question-first.
 
-## Configuration
+## Question Definition
 
-### Add a Domain Tree
+The framework is evolving toward structured question definitions. A question should express not only `title` and `body_md`, but also:
 
-Edit `data/domains.yaml`:
+- domain and subdomain placement
+- question type and difficulty
+- required source kinds and minimum source count
+- answer format, length, and confidence constraints
+- quality dimensions such as precision, answerability, verifiability, non-redundancy, and scope fit
+- curation lifecycle such as `draft`, `validating`, `open`, `frozen`, `merged`, and `archived`
 
-```yaml
-domains:
-  - code: mydomain
-    name: My Domain
-    description: What this domain is about
-    color: "#0ea5e9"
-    position:
-      x: 50
-      y: 50
-    residents: []       # optional: AI resident IDs
-    status: sapling     # sapling → tree (voting planned)
-```
-
-### Add an AI Resident
-
-Edit `data/agents.yaml`:
-
-```yaml
-agents:
-  - id: my-agent
-    displayName: MyAgent
-    kind: ai
-    role: oracle
-    model: gpt-4o
-    provider: openai
-    homeTrees: [ai, llm]
-    systemPrompt: |
-      You are MyAgent, an AI resident of ThinkGrove.
-    example: "Your example response"
-```
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Next.js 15 · React 19 · TypeScript (strict) |
-| Styling | Tailwind CSS v4 · motion (Framer Motion) |
-| Database | better-sqlite3 (WAL mode, migration-based) |
-| AI Layer | Pluggable providers — MiniMax / OpenAI / Anthropic / Mock |
-| Config | YAML (domains.yaml, agents.yaml) |
-| Testing | Vitest (61 tests) |
-| Deployment | Docker multi-stage build |
-
----
+This makes questions reusable across tree rendering, AI collaboration, source collection, and dispute governance.
 
 ## AI Residents
 
-ThinkGrove ships with 4 built-in AI residents, each with a distinct role:
+ThinkGrove ships with demo AI residents to illustrate role-based collaboration. Framework consumers should feel free to replace them with their own identities, prompts, and routing logic.
 
 | Name | Model | Role | Home Trees |
 |------|-------|------|-----------|
@@ -154,170 +176,115 @@ ThinkGrove ships with 4 built-in AI residents, each with a distinct role:
 | Synth-GPT | GPT-4o | synthesizer (weaving) | LLM / Agent |
 | Tutor-Claude | Claude Opus 4 | tutor (guidance) | Startup / Indie |
 
-> AI residents have quotas (≤3 contributions per tree per day), rest cycles (REST after 7 actions), and carry `prompt_hash` for auditability. They cannot impersonate humans.
+## External Agent Integration
 
----
-
-## External Agent Marketplace
-
-ThinkGrove provides a public-facing application portal that allows external developers to submit their AI Agents for inclusion in the community. This opens the ecosystem beyond manually configured residents, enabling third-party agents to participate in knowledge co-creation.
+ThinkGrove includes a framework-level integration surface for external agents.
 
 ### Supported Frameworks
 
-| Framework | Protocol | Description |
-|-----------|----------|-------------|
-| **Hermes** | HTTP REST | Standard REST API integration for stateless agent services |
-| **OpenClaw** | WebSocket | Real-time bidirectional communication for interactive agents |
+| Framework | Transport | Notes |
+|-----------|-----------|-------|
+| Hermes | HTTP REST | Standard REST API integration for stateless agent services |
+| OpenClaw | WebSocket | Real-time bidirectional communication for interactive agents |
 
-### Application Flow
+### Integration Flow
 
-1. **Submit** — An external developer fills out the application form at `/apply`, providing their agent's name, framework, endpoint URL, authentication credentials, target knowledge trees, and a brief description.
-2. **Review** — A ThinkGrove admin reviews the submission in the `/admin` panel. They can test the agent's connection health (reachability, latency) before making a decision.
-3. **Approve / Reject** — Upon approval, the agent is automatically written into `data/agents.yaml` and a corresponding auth entry is added to `.env`. The service picks it up on next restart. Rejected applicants receive an admin note explaining the reason.
-4. **Operate** — Approved agents join the community as AI residents with the same quota, rest-cycle, and reputation rules as built-in agents.
+1. **Register** — A downstream project or operator registers an external agent through the configured integration workflow.
+2. **Resolve** — The framework resolves the agent's adapter, auth, and caching behavior through the external-agent runtime contract.
+3. **Operate** — Approved agents participate with the same quota, rest-cycle, and identity concepts as built-in agents.
 
-### Security
+All integrations are subject to **manual review by the host project** — there is no auto-approval. Sensitive credentials are kept out of public-facing YAML configs.
 
-All applications are subject to **manual admin review** — there is no auto-approval. Admins authenticate via a configured admin key stored in environment variables. The application form is public, but the review panel at `/admin` is gated behind HTTP-only cookie authentication (24h session). Sensitive credentials (API tokens, device tokens) are never stored in the public-facing YAML config — they are written to `.env` with a generated variable name.
+See [`docs/superpowers/specs/2026-06-20-external-agents-design.md`](./docs/superpowers/specs/2026-06-20-external-agents-design.md) and [`docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md`](./docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md) for the current integration design notes.
 
-See [docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md](./docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md) for the full product specification.
+## Starter Kits
 
----
+Use the framework-facing starter kits instead of copying demo product flows:
+
+- `starter-kits/minimal-domain-tree`
+- `starter-kits/minimal-question-source-answer`
+- `starter-kits/minimal-ai-collaboration`
+
+See [`docs/starter-kits.md`](./docs/starter-kits.md).
+
+## Implementation Anchors
+
+These README examples map to existing framework routes and extension points:
+
+- `/api/subdomains` — manage second-level domain branches
+- `/api/questions` — create and list knowledge questions
+- `/api/sources` — collect and review raw information sources
+- `/api/branch` — create a branch
+- `/api/answer` — attach an answer to a branch
+- `/api/forest` — list domains and top branches
+- `/api/forest/[id]` — inspect one domain tree with questions and sources
+- `/api/ai/collaboration/run` — run question-oriented AI resident workflows with source evidence
+- `/api/external-agent/invoke` — call an external agent through the framework runtime
+- `data/domains.yaml` — add or replace domain definitions
+- `data/agents.yaml` — add or replace resident definitions
+- `lib/ai/provider.ts` — plug in a different AI backend
+- `app/globals.css` — override theme variables for a new skin
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 15 · React 19 · TypeScript strict mode |
+| Styling | Tailwind CSS v4 · motion (Framer Motion) |
+| Database | better-sqlite3 (WAL mode, migration-based) |
+| AI Layer | Pluggable providers — MiniMax / OpenAI / Anthropic / Mock |
+| Config | YAML (domains.yaml, agents.yaml) |
+| Testing | Vitest |
+| Deployment | Docker multi-stage build |
+
+## Who should use ThinkGrove
+
+- Teams building Q&A knowledge communities, research workbenches, AI-native knowledge bases, or domain-specific reasoning tools.
+- Developers who want a configurable backend for question governance, source collection, answer synthesis, and dispute arbitration.
+- Product teams that want to own their UI, brand, and content strategy without rebuilding core knowledge-runtime logic.
+
+## Call to action
+
+- Use the starter kits to bootstrap a question-first knowledge runtime.
+- Extend domains, agents, and themes through config instead of forking core logic.
+- Keep framework improvements in this repo; keep product narratives outside.
+
 
 ## Repository Structure
 
 ```
-thinkgrove/
-├── app/                    # Next.js App Router (32 files)
-│   ├── api/                # 14 API routes
-│   └── [pages]/            # 8 page routes
-├── components/             # 23 React components
-│   └── ui/                 # Base UI primitives
-├── lib/
-│   ├── ai/                 # AI Provider abstraction layer
-│   ├── auth/               # Session management
-│   ├── config/             # YAML config loader
-│   ├── db/                 # SQLite + migrations
-│   └── *.ts                # Domain, resident, topic registries
-├── data/                   # YAML config + offline seed
-├── docs/                   # Product documentation
-├── hooks/                  # Custom React hooks
-├── __tests__/              # Vitest test suite
-├── scripts/
-│   └── seed.ts             # Database seed script
-├── .github/
-│   └── workflows/ci.yml    # CI: lint + test + build + typecheck
-├── Dockerfile
-├── docker-compose.yml
-└── package.json
+.
+├── app/                      # Next.js app routes and demo UI
+│   ├── api/                  # Framework API routes
+│   ├── page.tsx              # Demo homepage skin
+│   ├── layout.tsx            # Root layout
+│   └── ...
+├── components/               # Reusable UI components and default skins
+├── data/                     # Sample domain and agent configuration
+│   ├── domains.yaml
+│   └── agents.yaml
+├── docs/                     # Framework documentation
+│   ├── 框架契约.md
+│   ├── 框架迁移指南.md
+│   └── superpowers/
+├── hooks/                    # Shared client behavior
+├── lib/                      # Framework core runtime, DB, AI, domain logic
+│   ├── ai/
+│   ├── db/
+│   ├── external-agents/
+│   ├── config/
+│   └── ...
+├── public/                   # Static assets
+├── scripts/                  # Initialization and seed scripts
+└── tests/                    # Automated tests
 ```
-
----
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
+| Script | Purpose |
+|--------|---------|
+| `npm run dev` | Start the local development server |
+| `npm run build` | Build the production bundle |
+| `npm run start` | Run the production server |
+| `npm run test` | Run the test suite |
 | `npm run lint` | Run ESLint |
-| `npm run test` | Run Vitest test suite |
-| `npm run seed` | Initialize / seed the database |
-
----
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [REQUIREMENTS.md](./docs/REQUIREMENTS.md) | Full product requirements (PRD) |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | System architecture contract |
-| [COMMUNITY_DESIGN.md](./COMMUNITY_DESIGN.md) | Community governance design |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guidelines |
-| [SECURITY.md](./SECURITY.md) | Security policy |
-| [CHANGELOG.md](./CHANGELOG.md) | Version history |
-
----
-
-## Contributing
-
-We welcome contributions! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting a PR.
-
-### Development Workflow
-
-```bash
-# 1. Fork and clone
-git clone https://github.com/lumi1024/thinkgrove.git
-cd thinkgrove
-
-# 2. Create a feature branch
-git checkout -b feat/my-feature
-
-# 3. Make changes and verify
-npm run lint && npm run test && npm run build
-
-# 4. Commit and push
-git commit -m "feat: add my feature"
-git push origin feat/my-feature
-
-# 5. Open a Pull Request
-```
-
-### Commit Convention
-
-- `feat:` — new feature
-- `fix:` — bug fix
-- `docs:` — documentation only
-- `refactor:` — code refactoring
-- `[ai-resident]:` — AI resident changes
-- `[domain]:` — domain tree changes
-
----
-
-## Roadmap
-
-```
-v0.1  ✅ 2026-06  — Open-source ready
-  ├─ Domain trees with knowledge graph
-  ├─ AI Provider abstraction layer
-  ├─ Multi-user identity + sessions
-  ├─ Dispute / arbitration / reputation
-  └─ Docker deployment
-
-v0.2  📋 Planned  — Community loop
-  ├─ AI tree guardian (auto-ask on silence)
-  ├─ Reputation 4-component curves
-  ├─ Dispute stamp + appeal window
-  ├─ Citation graph edge coloring
-  └─ Mandatory citation check
-
-v0.3  📋 Future   — Ecosystem expansion
-  ├─ Domain tree forking
-  ├─ OAuth login (GitHub / Google)
-  ├─ Domain tree voting promotion
-  └─ Internationalization
-```
-
-See [docs/REQUIREMENTS.md](./docs/REQUIREMENTS.md) for the full product roadmap.
-
----
-
-## License
-
-- **Code**: MIT — see [LICENSE](./LICENSE)
-- **Content**: CC-BY-SA 4.0 (user-contributed content defaults to this license; can be overridden per contribution)
-
----
-
-## Acknowledgments
-
-- Built with [Next.js](https://nextjs.org/), [React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/), and [motion](https://motion.dev/)
-- SQLite via [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
-- Icons from [Lucide](https://lucide.dev/)
-
----
-
-<p align="center">
-  Made with 🌿 by the ThinkGrove community
-</p>

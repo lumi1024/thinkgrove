@@ -35,10 +35,11 @@ export interface DbBranch {
   domain_id: string;
   parent_branch_id: string | null;
   title: string;
-  kind: 'question' | 'counter' | 'cite' | 'rebuttal';
+  kind: 'question' | 'counter' | 'cite' | 'rebuttal' | 'meta' | 'source_note';
   created_by: string;
   created_at: string;
   body_md: string | null;
+  question_id: string | null;
 }
 export interface DbAnswer {
   id: string;
@@ -49,6 +50,10 @@ export interface DbAnswer {
   kind: 'human' | 'ai';
   prompt_hash: string | null;
   created_at: string;
+  question_id: string | null;
+  confidence: number | null;
+  source_ids: string | null;
+  answer_kind: 'human' | 'ai' | 'synthesized';
 }
 export interface DbArticle {
   id: string;
@@ -62,7 +67,7 @@ export interface DbArticle {
 }
 export interface DbDispute {
   id: string;
-  target_type: 'answer' | 'article';
+  target_type: 'answer' | 'article' | 'source';
   target_id: string;
   opened_by: string;
   reason: string;
@@ -81,9 +86,9 @@ export interface DbVote {
 }
 export interface DbCitation {
   id: string;
-  from_type: string;
+  from_type: 'answer' | 'article' | 'branch' | 'question' | 'source';
   from_id: string;
-  to_type: string;
+  to_type: 'branch' | 'article' | 'external' | 'source';
   to_id: string;
   relation: 'cite' | 'dispute' | 'rewrite' | 'adopted';
   created_at: string;
@@ -155,12 +160,29 @@ export function upsertUser(u: DbUser): void {
     `INSERT INTO users (id, handle, display_name, kind, model, provider, role, signature, joined_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
+       handle = excluded.handle,
        display_name = excluded.display_name,
-       role = excluded.role`,
+       kind = excluded.kind,
+       model = excluded.model,
+       provider = excluded.provider,
+       role = excluded.role,
+       signature = excluded.signature`,
   ).run(u.id, u.handle, u.display_name, u.kind, u.model, u.provider, u.role, u.signature, u.joined_at);
 }
 
 // ----- branches -----
+export function createBranch(b: DbBranch): void {
+  db.prepare(
+    `INSERT INTO branches (id, domain_id, parent_branch_id, title, kind, created_by, created_at, body_md, question_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(b.id, b.domain_id, b.parent_branch_id, b.title, b.kind, b.created_by, b.created_at, b.body_md, b.question_id);
+}
+
+export function getBranch(id: string): DbBranch | null {
+  const row = db.prepare('SELECT * FROM branches WHERE id = ? LIMIT 1').get(id) as DbBranch | undefined;
+  return row ?? null;
+}
+
 export function listBranchesByDomain(domainId: string, limit = 30): DbBranch[] {
   return db.prepare('SELECT * FROM branches WHERE domain_id = ? ORDER BY created_at DESC LIMIT ?').all(domainId, limit) as DbBranch[];
 }
@@ -169,64 +191,83 @@ export function listBranchesByAuthor(authorId: string, limit = 20): DbBranch[] {
   return db.prepare('SELECT * FROM branches WHERE created_by = ? ORDER BY created_at DESC LIMIT ?').all(authorId, limit) as DbBranch[];
 }
 
+export function listAllBranches(): DbBranch[] {
+  return db.prepare('SELECT * FROM branches').all() as DbBranch[];
+}
+
+// ----- answers -----
+export function createAnswer(a: DbAnswer): void {
+  db.prepare(
+    `INSERT INTO answers (id, branch_id, body_md, citations, author_id, kind, prompt_hash, created_at, question_id, confidence, source_ids, answer_kind)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    a.id,
+    a.branch_id,
+    a.body_md,
+    a.citations ? JSON.stringify(a.citations) : null,
+    a.author_id,
+    a.kind,
+    a.prompt_hash,
+    a.created_at,
+    a.question_id,
+    a.confidence,
+    a.source_ids,
+    a.answer_kind,
+  );
+}
+
+export function getAnswer(id: string): DbAnswer | null {
+  const row = db.prepare('SELECT * FROM answers WHERE id = ? LIMIT 1').get(id) as DbAnswer | undefined;
+  return row ?? null;
+}
+
+export function listAnswersByBranch(branchId: string): DbAnswer[] {
+  return db.prepare('SELECT * FROM answers WHERE branch_id = ? ORDER BY created_at ASC').all(branchId) as DbAnswer[];
+}
+
 export function listAnswersByAuthor(authorId: string, limit = 20): DbAnswer[] {
   return db.prepare('SELECT * FROM answers WHERE author_id = ? ORDER BY created_at DESC LIMIT ?').all(authorId, limit) as DbAnswer[];
+}
+
+export function listAnswersByQuestion(questionId: string, limit = 30): DbAnswer[] {
+  return db.prepare('SELECT * FROM answers WHERE question_id = ? ORDER BY created_at ASC LIMIT ?').all(questionId, limit) as DbAnswer[];
+}
+
+export function listAllArticles(): DbArticle[] {
+  return db.prepare('SELECT * FROM articles').all() as DbArticle[];
+}
+
+// ----- articles -----
+export function createArticle(a: DbArticle): void {
+  db.prepare(
+    `INSERT INTO articles (id, domain_id, title, body_md, author_id, co_authors, cited_branches, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    a.id,
+    a.domain_id,
+    a.title,
+    a.body_md,
+    a.author_id,
+    a.co_authors ? JSON.stringify(a.co_authors) : null,
+    a.cited_branches ? JSON.stringify(a.cited_branches) : null,
+    a.created_at,
+  );
+}
+
+export function listArticlesByDomain(domainId: string, limit = 8): DbArticle[] {
+  return db.prepare('SELECT * FROM articles WHERE domain_id = ? ORDER BY created_at DESC LIMIT ?').all(domainId, limit) as DbArticle[];
 }
 
 export function listArticlesByAuthor(authorId: string, limit = 20): DbArticle[] {
   return db.prepare('SELECT * FROM articles WHERE author_id = ? ORDER BY created_at DESC LIMIT ?').all(authorId, limit) as DbArticle[];
 }
 
-export function createBranch(b: DbBranch): void {
-  db.prepare(
-    `INSERT INTO branches (id, domain_id, parent_branch_id, title, kind, created_by, created_at, body_md)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(b.id, b.domain_id, b.parent_branch_id, b.title, b.kind, b.created_by, b.created_at, b.body_md);
-}
-
-export function getBranch(id: string): DbBranch | null {
-  const row = db.prepare('SELECT * FROM branches WHERE id = ? LIMIT 1').get(id) as DbBranch | undefined;
-  return row ?? null;
-}
-
-// ----- answers -----
-export function listAnswersByBranch(branchId: string): DbAnswer[] {
-  return db.prepare('SELECT * FROM answers WHERE branch_id = ? ORDER BY created_at ASC').all(branchId) as DbAnswer[];
-}
-
-export function createAnswer(a: DbAnswer): void {
-  db.prepare(
-    `INSERT INTO answers (id, branch_id, body_md, citations, author_id, kind, prompt_hash, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(a.id, a.branch_id, a.body_md, JSON.stringify(a.citations ?? []), a.author_id, a.kind, a.prompt_hash, a.created_at);
-}
-
-// ----- articles -----
-export function listArticlesByDomain(domainId: string, limit = 8): DbArticle[] {
-  return db.prepare('SELECT * FROM articles WHERE domain_id = ? ORDER BY created_at DESC LIMIT ?').all(domainId, limit) as DbArticle[];
-}
-
-export function listAllBranches(): DbBranch[] {
-  return db.prepare('SELECT * FROM branches ORDER BY domain_id, created_at DESC').all() as DbBranch[];
-}
-
-export function listAllArticles(): DbArticle[] {
-  return db.prepare('SELECT * FROM articles ORDER BY domain_id, created_at DESC').all() as DbArticle[];
-}
-
-export function createArticle(a: DbArticle): void {
-  db.prepare(
-    `INSERT INTO articles (id, domain_id, title, body_md, author_id, co_authors, cited_branches, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(a.id, a.domain_id, a.title, a.body_md, a.author_id, JSON.stringify(a.co_authors ?? []), JSON.stringify(a.cited_branches ?? []), a.created_at);
-}
-
 // ----- disputes -----
 export function createDispute(d: DbDispute): void {
   db.prepare(
-    `INSERT INTO disputes (id, target_type, target_id, opened_by, reason, status, opened_at, appeal_until)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(d.id, d.target_type, d.target_id, d.opened_by, d.reason, d.status, d.opened_at, d.appeal_until);
+    `INSERT INTO disputes (id, target_type, target_id, opened_by, reason, status, ruling_summary, opened_at, appeal_until)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(d.id, d.target_type, d.target_id, d.opened_by, d.reason, d.status, d.ruling_summary, d.opened_at, d.appeal_until);
 }
 
 export function getDispute(id: string): DbDispute | null {
@@ -235,20 +276,19 @@ export function getDispute(id: string): DbDispute | null {
 }
 
 export function updateDisputeRuling(id: string, rulingSummary: string): void {
-  db.prepare("UPDATE disputes SET status = 'ruling', ruling_summary = ? WHERE id = ?").run(rulingSummary, id);
+  db.prepare('UPDATE disputes SET status = ?, ruling_summary = ? WHERE id = ?').run('ruling', rulingSummary, id);
 }
 
 export function listDisputesForUser(userId: string): DbDispute[] {
-  return db.prepare('SELECT * FROM disputes WHERE opened_by = ? ORDER BY opened_at DESC').all(userId) as DbDispute[];
+  return db.prepare('SELECT * FROM disputes WHERE opened_by = ? ORDER BY opened_at DESC LIMIT 30').all(userId) as DbDispute[];
+}
+
+export function listDisputesForSource(sourceId: string): DbDispute[] {
+  return db.prepare("SELECT * FROM disputes WHERE target_type = 'source' AND target_id = ? ORDER BY opened_at DESC").all(sourceId) as DbDispute[];
 }
 
 // ----- votes -----
-export function castVote(
-  voterId: string,
-  targetType: 'dispute' | 'branch' | 'answer' | 'article',
-  targetId: string,
-  weight: number,
-): void {
+export function castVote(voterId: string, targetType: string, targetId: string, weight: number): void {
   const id = 'v_' + Math.random().toString(36).slice(2, 12);
   db.prepare(
     `INSERT INTO votes (id, voter_id, target_type, target_id, weight, ts)
@@ -315,9 +355,9 @@ export function setAgentRest(userId: string, restUntil: Date): void {
 
 // ----- citations -----
 export function createCitation(
-  fromType: 'answer' | 'article' | 'branch',
+  fromType: 'answer' | 'article' | 'branch' | 'question' | 'source',
   fromId: string,
-  toType: 'branch' | 'article' | 'external',
+  toType: 'branch' | 'article' | 'external' | 'source',
   toId: string,
   relation: 'cite' | 'dispute' | 'rewrite' | 'adopted' = 'cite',
 ): void {
@@ -341,3 +381,16 @@ export function listCitationsForUser(userId: string): DbCitation[] {
     )
     .all(userId, userId, userId) as DbCitation[];
 }
+
+export function listCitationsForSource(sourceId: string): DbCitation[] {
+  return db.prepare("SELECT * FROM citations WHERE to_type = 'source' AND to_id = ? ORDER BY created_at DESC").all(sourceId) as DbCitation[];
+}
+
+// ----- subdomains -----
+export { listSubdomains, createSubdomain, getSubdomain, getSubdomainByCode, updateSubdomain, type DbSubdomain } from './repos/subdomains';
+
+// ----- questions -----
+export { createQuestion, getQuestion, listQuestionsByDomain, listQuestionsBySubdomain, listOpenQuestions, updateQuestion, type DbQuestion } from './repos/questions';
+
+// ----- sources -----
+export { createSource, getSource, listSourcesByQuestion, listSourcesByDomain, updateSource, type DbSource } from './repos/sources';

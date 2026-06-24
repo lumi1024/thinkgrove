@@ -24,6 +24,10 @@ interface CreateAnswerBody {
   authorRole: string;
   authorModel?: string;
   authorProvider?: string;
+  questionId?: string;
+  sourceIds?: string[];
+  confidence?: number | null;
+  answerKind?: 'human' | 'ai' | 'synthesized';
 }
 
 export async function POST(req: Request) {
@@ -79,7 +83,7 @@ export async function POST(req: Request) {
 
       try {
         const result = await adapter.invoke({
-          agentId: body.authorId,
+          agentId: agentConfig.id,
           action: 'answer',
           context: {
             topic,
@@ -145,11 +149,14 @@ export async function POST(req: Request) {
       kind: body.authorKind,
       prompt_hash: promptHash,
       created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      question_id: body.questionId || branch?.question_id || null,
+      confidence: body.confidence ?? null,
+      source_ids: body.sourceIds?.length ? JSON.stringify(body.sourceIds) : null,
+      answer_kind: body.answerKind || (body.authorKind === 'ai' ? 'ai' : 'human'),
     });
 
     return NextResponse.json({ id, ok: true, aiGenerated, bodyMd: finalBody });
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.warn('[api/answer] DB unavailable:', (e as Error).message);
     return NextResponse.json({ error: 'database unavailable — answer not persisted' }, { status: 503 });
   }
