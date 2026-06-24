@@ -1,6 +1,7 @@
 {
   "name": "thinkgrove",
   "version": "0.1.0",
+  "type": "module",
   "private": false,
   "description": "A co-creation knowledge base where humans and AI grow ideas together — an open-source digital ecosystem for cross-disciplinary thought.",
   "author": "ThinkGrove Contributors",
@@ -29,7 +30,8 @@
     "clean": "next clean",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "node --import tsx/cli.mjs scripts/seed.ts",
+    "pretest": "node scripts/clean-test-db.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
@@ -56,6 +58,7 @@
     "eslint-config-next": "16.0.8",
     "postcss": "^8.5.15",
     "tailwindcss": "4.1.11",
+    "tsx": "^4.7.0",
     "typescript": "5.9.3",
     "vitest": "^3.2.0"
   }

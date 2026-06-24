@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS subdomains (
   code         TEXT    NOT NULL,
   name         TEXT    NOT NULL,
   description  TEXT    NULL,
-  status       TEXT    NOT NULL DEFAULT 'tree' CHECK(status IN ('sapling','tree')),
+  status       TEXT    NOT NULL DEFAULT 'tree',
   position     TEXT    NULL,
   created_at   TEXT    NOT NULL DEFAULT (datetime('now')),
   FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS sources (
   title               TEXT    NOT NULL,
   url                 TEXT    NOT NULL,
   summary_md          TEXT    NULL,
-  source_kind         TEXT    NOT NULL DEFAULT 'web' CHECK(source_kind IN ('web','paper','report','internal','external_api')),
+  source_kind         TEXT    NOT NULL DEFAULT 'web',
   authority_score     REAL    NOT NULL DEFAULT 0,
   freshness_score     REAL    NOT NULL DEFAULT 0,
   collected_by        TEXT    NOT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE branches_new (
   domain_id        TEXT    NOT NULL,
   parent_branch_id TEXT    NULL,
   title            TEXT    NOT NULL,
-  kind             TEXT    NOT NULL DEFAULT 'question' CHECK(kind IN ('question','counter','cite','rebuttal','meta','source_note')),
+  kind             TEXT    NOT NULL DEFAULT 'question',
   created_by       TEXT    NOT NULL,
   created_at       TEXT    NOT NULL,
   body_md          TEXT    NULL,
@@ -83,7 +83,7 @@ CREATE TABLE branches_new (
 );
 
 INSERT INTO branches_new SELECT id, domain_id, parent_branch_id, title, kind, created_by, created_at, body_md, NULL FROM branches;
-DROP TABLE branches;
+DROP TABLE IF EXISTS branches;
 ALTER TABLE branches_new RENAME TO branches;
 
 CREATE INDEX IF NOT EXISTS idx_branches_domain ON branches(domain_id);
@@ -95,19 +95,19 @@ CREATE TABLE answers_new (
   body_md       TEXT    NOT NULL,
   citations     TEXT    NULL,
   author_id     TEXT    NOT NULL,
-  kind          TEXT    NOT NULL CHECK(kind IN ('human','ai')),
+  kind          TEXT    NOT NULL,
   prompt_hash   TEXT    NULL,
   created_at    TEXT    NOT NULL,
   question_id   TEXT    NULL,
   confidence    REAL    NULL,
   source_ids    TEXT    NULL,
-  answer_kind   TEXT    NOT NULL DEFAULT 'human' CHECK(answer_kind IN ('human','ai','synthesized')),
+  answer_kind   TEXT    NOT NULL DEFAULT 'human',
   FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE,
   FOREIGN KEY (author_id) REFERENCES users(id)
 );
 
 INSERT INTO answers_new SELECT id, branch_id, body_md, citations, author_id, kind, prompt_hash, created_at, NULL, NULL, NULL, 'human' FROM answers;
-DROP TABLE answers;
+DROP TABLE IF EXISTS answers;
 ALTER TABLE answers_new RENAME TO answers;
 
 CREATE INDEX IF NOT EXISTS idx_answers_branch ON answers(branch_id);
@@ -116,16 +116,16 @@ CREATE INDEX IF NOT EXISTS idx_answers_author ON answers(author_id);
 -- Recreate citations/disputes with expanded target types.
 CREATE TABLE citations_new (
   id          TEXT    PRIMARY KEY,
-  from_type   TEXT    NOT NULL CHECK(from_type IN ('answer','article','branch','question','source')),
+  from_type   TEXT    NOT NULL,
   from_id     TEXT    NOT NULL,
-  to_type     TEXT    NOT NULL CHECK(to_type IN ('branch','article','external','source')),
+  to_type     TEXT    NOT NULL,
   to_id       TEXT    NOT NULL,
-  relation    TEXT    NOT NULL DEFAULT 'cite' CHECK(relation IN ('cite','dispute','rewrite','adopted')),
+  relation    TEXT    NOT NULL DEFAULT 'cite',
   created_at  TEXT    NOT NULL
 );
 
 INSERT INTO citations_new SELECT id, from_type, from_id, to_type, to_id, relation, created_at FROM citations;
-DROP TABLE citations;
+DROP TABLE IF EXISTS citations;
 ALTER TABLE citations_new RENAME TO citations;
 
 CREATE INDEX IF NOT EXISTS idx_citations_from ON citations(from_type, from_id);
@@ -133,11 +133,11 @@ CREATE INDEX IF NOT EXISTS idx_citations_to ON citations(to_type, to_id);
 
 CREATE TABLE disputes_new (
   id              TEXT    PRIMARY KEY,
-  target_type     TEXT    NOT NULL CHECK(target_type IN ('answer','article','source')),
+  target_type     TEXT    NOT NULL,
   target_id       TEXT    NOT NULL,
   opened_by       TEXT    NOT NULL,
   reason          TEXT    NOT NULL,
-  status          TEXT    NOT NULL DEFAULT 'open' CHECK(status IN ('open','ruling','closed')),
+  status          TEXT    NOT NULL DEFAULT 'open',
   ruling_summary  TEXT    NULL,
   opened_at       TEXT    NOT NULL,
   appeal_until    TEXT    NULL,
@@ -145,7 +145,7 @@ CREATE TABLE disputes_new (
 );
 
 INSERT INTO disputes_new SELECT id, target_type, target_id, opened_by, reason, status, ruling_summary, opened_at, appeal_until FROM disputes;
-DROP TABLE disputes;
+DROP TABLE IF EXISTS disputes;
 ALTER TABLE disputes_new RENAME TO disputes;
 
 CREATE INDEX IF NOT EXISTS idx_disputes_target ON disputes(target_type, target_id);

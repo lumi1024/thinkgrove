@@ -38,8 +38,8 @@ beforeEach(() => {
 });
 
 describe('ensureMigrated', () => {
-  it('creates all core tables', () => {
-    ensureMigrated();
+  it('creates all core tables', async () => {
+    await ensureMigrated();
     const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all() as { name: string }[];
     const names = tables.map((t) => t.name);
     expect(names).toContain('users');
@@ -53,20 +53,20 @@ describe('ensureMigrated', () => {
     expect(names).toContain('sessions');
   });
 
-  it('is idempotent — running twice does not error', () => {
-    ensureMigrated();
-    expect(() => ensureMigrated()).not.toThrow();
+  it('is idempotent — running twice does not error', async () => {
+    await ensureMigrated();
+    await expect(ensureMigrated()).resolves.toBeUndefined();
   });
 
-  it('records applied migrations', () => {
-    ensureMigrated();
+  it('records applied migrations', async () => {
+    await ensureMigrated();
     const versions = db.prepare('SELECT version FROM schema_migrations ORDER BY version').all() as { version: string }[];
     expect(versions.length).toBeGreaterThanOrEqual(2);
     expect(versions[0].version).toBe('001_initial_schema');
   });
 
-  it('creates indexes', () => {
-    ensureMigrated();
+  it('creates indexes', async () => {
+    await ensureMigrated();
     const indexes = db.prepare("SELECT name FROM sqlite_master WHERE type='index'").all() as { name: string }[];
     const names = indexes.map((i) => i.name);
     expect(names).toContain('idx_branches_domain');
@@ -74,10 +74,10 @@ describe('ensureMigrated', () => {
     expect(names).toContain('idx_sessions_user');
   });
 
-  it('does not re-apply already-applied migrations', () => {
-    ensureMigrated();
+  it('does not re-apply already-applied migrations', async () => {
+    await ensureMigrated();
     const count1 = (db.prepare('SELECT COUNT(*) as n FROM schema_migrations').get() as { n: number }).n;
-    ensureMigrated();
+    await ensureMigrated();
     const count2 = (db.prepare('SELECT COUNT(*) as n FROM schema_migrations').get() as { n: number }).n;
     expect(count2).toBe(count1);
   });
