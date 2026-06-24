@@ -12,6 +12,27 @@ export interface DbQuestion {
   open: number;
   canonical: number;
   source_requirements: string | null;
+  question_type: string | null;
+  difficulty: string | null;
+  language: string | null;
+  visibility: string;
+  required_source_kinds: string | null;
+  required_source_count: number | null;
+  required_source_authority_min: number | null;
+  required_answer_format: string | null;
+  forbidden_phrases: string | null;
+  min_confidence: number | null;
+  max_answer_length: number | null;
+  precision: number | null;
+  answerability: number | null;
+  verifiability: number | null;
+  non_redundancy: number | null;
+  scope_fit: number | null;
+  status: string;
+  labels: string | null;
+  curated_by: string | null;
+  curation_rule_id: string | null;
+  schema_version: string;
   created_by: string;
   created_at: string;
   last_activity_at: string;
@@ -19,7 +40,7 @@ export interface DbQuestion {
 
 export function createQuestion(question: DbQuestion): void {
   getDb().prepare(
-    `INSERT INTO questions (id, domain_id, subdomain_id, title, body_md, quality_score, open, canonical, source_requirements, created_by, created_at, last_activity_at)
+    `INSERT INTO questions (id, domain_id, subdomain_id, title, body_md, quality_score, open, canonical, source_requirements, question_type, difficulty, language, visibility, required_source_kinds, required_source_count, required_source_authority_min, required_answer_format, forbidden_phrases, min_confidence, max_answer_length, precision, answerability, verifiability, non_redundancy, scope_fit, status, labels, curated_by, curation_rule_id, schema_version, created_by, created_at, last_activity_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     question.id,
@@ -31,6 +52,27 @@ export function createQuestion(question: DbQuestion): void {
     question.open,
     question.canonical,
     question.source_requirements,
+    question.question_type,
+    question.difficulty,
+    question.language,
+    question.visibility,
+    question.required_source_kinds,
+    question.required_source_count,
+    question.required_source_authority_min,
+    question.required_answer_format,
+    question.forbidden_phrases,
+    question.min_confidence,
+    question.max_answer_length,
+    question.precision,
+    question.answerability,
+    question.verifiability,
+    question.non_redundancy,
+    question.scope_fit,
+    question.status,
+    question.labels,
+    question.curated_by,
+    question.curation_rule_id,
+    question.schema_version,
     question.created_by,
     question.created_at,
     question.last_activity_at,
@@ -55,7 +97,36 @@ export function listOpenQuestions(limit = 50): DbQuestion[] {
 }
 
 export function updateQuestion(id: string, updates: Partial<DbQuestion>): void {
-  const allowed = ['title', 'body_md', 'quality_score', 'open', 'canonical', 'source_requirements', 'last_activity_at'] as const;
+  const allowed = [
+    'title',
+    'body_md',
+    'quality_score',
+    'open',
+    'canonical',
+    'source_requirements',
+    'question_type',
+    'difficulty',
+    'language',
+    'visibility',
+    'required_source_kinds',
+    'required_source_count',
+    'required_source_authority_min',
+    'required_answer_format',
+    'forbidden_phrases',
+    'min_confidence',
+    'max_answer_length',
+    'precision',
+    'answerability',
+    'verifiability',
+    'non_redundancy',
+    'scope_fit',
+    'status',
+    'labels',
+    'curated_by',
+    'curation_rule_id',
+    'schema_version',
+    'last_activity_at',
+  ] as const;
   const sets: string[] = [];
   const values: any[] = [];
 

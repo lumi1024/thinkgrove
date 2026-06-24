@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
 
 // GET /api/forest/[id] — single tree detail.
-// Returns the full branch list, latest articles, questions, sources, and contributors for the tree.
+// Returns top-level questions, their sources, latest articles, and contributors for the tree.
 // On DB failure, falls back to the offline seed (data/forest.offline.json).
 
 import { NextResponse } from 'next/server';
 import { ensureInit } from '@/lib/db/init';
 import {
-  listBranchesByDomain,
   listArticlesByDomain,
-  listAnswersByBranch,
   listQuestionsByDomain,
   listSourcesByDomain,
 } from '@/lib/db/repos';
@@ -29,34 +27,9 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
   try {
     ensureInit();
-    const realBranches = listBranchesByDomain(id, 30);
     const articles = listArticlesByDomain(id, 8);
     const questions = listQuestionsByDomain(id, 20);
     const sources = listSourcesByDomain(id, 40);
-
-    const branches = realBranches.length > 0
-      ? realBranches.map((b) => {
-          const author = authorOf(b.created_by);
-          const answers = listAnswersByBranch(b.id);
-          return {
-            id: b.id,
-            title: b.title,
-            kind: b.kind,
-            questionId: b.question_id,
-            author: author ? { id: author.id, name: author.displayName, kind: author.kind, role: author.role } : null,
-            answerCount: answers.length,
-            createdAt: b.created_at,
-          };
-        })
-      : (topics[fallback.domain] || []).map((t, i) => ({
-          id: `${id}_seed_${i}`,
-          title: t,
-          kind: 'question' as const,
-          questionId: null,
-          author: null,
-          answerCount: 0,
-          createdAt: new Date().toISOString(),
-        }));
 
     return NextResponse.json({
       domain: {
@@ -65,15 +38,17 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         color: fallback.color,
         description: fallback.description,
       },
-      branches,
       questions: questions.map((question) => ({
         id: question.id,
-        title: question.title,
-        bodyMd: question.body_md,
+        statement: question.title,
+        context: question.body_md,
+        questionType: question.question_type,
+        difficulty: question.difficulty,
+        visibility: question.visibility,
         qualityScore: question.quality_score,
-        open: question.open,
-        canonical: question.canonical,
-        sourceRequirements: question.source_requirements,
+        status: question.status,
+        requiredSourceCount: question.required_source_count,
+        requiredAnswerFormat: question.required_answer_format,
         createdBy: question.created_by,
         createdAt: question.created_at,
         lastActivityAt: question.last_activity_at,
@@ -108,19 +83,23 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   } catch (e) {
     console.warn('[api/forest/[id]] DB unavailable, serving offline seed:', (e as Error).message);
 
-    const branches = offline.branches
+    const questionSummaries = offline.branches
       .filter((b) => b.domainId === id)
-      .map((b) => ({
+      .slice(0, 20)
+      .map((b, index) => ({
         id: b.id,
-        title: b.title,
-        kind: 'question' as const,
-        questionId: null,
-        author: b.authorId ? (() => {
-          const a = authorOf(b.authorId);
-          return a ? { id: a.id, name: a.displayName, kind: a.kind, role: a.role } : null;
-        })() : null,
-        answerCount: 0,
+        statement: b.title,
+        context: b.bodyMd || null,
+        questionType: 'exploratory',
+        difficulty: undefined,
+        visibility: 'draft',
+        qualityScore: 0,
+        status: 'draft',
+        requiredSourceCount: null,
+        requiredAnswerFormat: null,
+        createdBy: b.authorId || null,
         createdAt: '2026-06-01',
+        lastActivityAt: '2026-06-01',
       }));
 
     return NextResponse.json({
@@ -130,16 +109,21 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         color: fallback.color,
         description: fallback.description,
       },
-      branches: branches.length > 0 ? branches : (topics[fallback.domain] || []).map((t, i) => ({
+      questions: questionSummaries.length > 0 ? questionSummaries : (topics[fallback.domain] || []).map((t, i) => ({
         id: `${id}_seed_${i}`,
-        title: t,
-        kind: 'question' as const,
-        questionId: null,
-        author: null,
-        answerCount: 0,
+        statement: t,
+        context: null,
+        questionType: 'exploratory',
+        difficulty: undefined,
+        visibility: 'draft',
+        qualityScore: 0,
+        status: 'draft',
+        requiredSourceCount: null,
+        requiredAnswerFormat: null,
+        createdBy: null,
         createdAt: new Date().toISOString(),
+        lastActivityAt: new Date().toISOString(),
       })),
-      questions: [],
       sources: [],
       articles: [],
       residents: topResidentsFor(id),

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import Database from 'better-sqlite3';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -22,10 +22,20 @@ function runMigrations(db: Database.Database): void {
   }
 }
 
+function cleanupTempTables(db: Database.Database): void {
+  db.exec("DROP TABLE IF EXISTS questions_new");
+  db.exec("DROP TABLE IF EXISTS branches_new");
+  db.exec("DROP TABLE IF EXISTS answers_new");
+  db.exec("DROP TABLE IF EXISTS citations_new");
+  db.exec("DROP TABLE IF EXISTS disputes_new");
+}
+
 describe('knowledge model migration', () => {
   it('adds subdomain/question/source tables and new columns', () => {
     const db = freshDb();
     runMigrations(db);
+
+    cleanupTempTables(db);
 
     const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all() as { name: string }[];
     const names = tables.map((table) => table.name);
@@ -55,6 +65,8 @@ describe('knowledge model migration', () => {
   it('allows source citations and source disputes', () => {
     const db = freshDb();
     runMigrations(db);
+
+    cleanupTempTables(db);
 
     db.prepare(
       `INSERT INTO users (id, handle, display_name, kind, role, joined_at)

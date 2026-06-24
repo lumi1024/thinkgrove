@@ -14,6 +14,8 @@ import {
   makeUser,
   upsertUser,
 } from '@/lib/db/repos';
+import { normalizeQuestionDefinition, validateQuestionDefinition } from '@/lib/questions/schema';
+import { toDbQuestionPayload } from '@/lib/questions/factory';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,7 +43,40 @@ export async function GET(req: Request) {
     ? listQuestionsBySubdomain(subdomainId)
     : listQuestionsByDomain(domainId as string);
 
-  return NextResponse.json({ items });
+  return NextResponse.json({
+    items: items.map((question) => ({
+      id: question.id,
+      domainId: question.domain_id,
+      subdomainId: question.subdomain_id,
+      statement: question.title,
+      context: question.body_md,
+      questionType: question.question_type,
+      difficulty: question.difficulty,
+      language: question.language,
+      visibility: question.visibility,
+      requiredSourceKinds: question.required_source_kinds,
+      requiredSourceCount: question.required_source_count,
+      requiredSourceAuthorityMin: question.required_source_authority_min,
+      requiredAnswerFormat: question.required_answer_format,
+      forbiddenPhrases: question.forbidden_phrases,
+      minConfidence: question.min_confidence,
+      maxAnswerLength: question.max_answer_length,
+      qualityScore: question.quality_score,
+      precision: question.precision,
+      answerability: question.answerability,
+      verifiability: question.verifiability,
+      nonRedundancy: question.non_redundancy,
+      scopeFit: question.scope_fit,
+      status: question.status,
+      labels: question.labels,
+      curatedBy: question.curated_by,
+      curationRuleId: question.curation_rule_id,
+      schemaVersion: question.schema_version,
+      createdBy: question.created_by,
+      createdAt: question.created_at,
+      lastActivityAt: question.last_activity_at,
+    })),
+  });
 }
 
 export async function POST(req: Request) {
@@ -49,9 +84,19 @@ export async function POST(req: Request) {
   let body: {
     domainId: string;
     subdomainId?: string;
-    title: string;
-    bodyMd?: string;
-    sourceRequirements?: string;
+    statement: string;
+    context?: string;
+    questionType?: 'exploratory' | 'comparison' | 'causal' | 'procedural' | 'factual' | 'normative';
+    difficulty?: 'beginner' | 'intermediate' | 'advanced';
+    language?: string;
+    visibility?: 'draft' | 'internal' | 'public';
+    requiredSourceKinds?: Array<'web' | 'paper' | 'report' | 'internal' | 'external_api'>;
+    requiredSourceCount?: number;
+    requiredSourceAuthorityMin?: number;
+    requiredAnswerFormat?: string;
+    forbiddenPhrases?: string[];
+    minConfidence?: number;
+    maxAnswerLength?: number;
     authorId: string;
     authorKind: 'human' | 'ai';
     authorDisplayName: string;
@@ -64,7 +109,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid json' }, { status: 400 });
   }
 
-  if (!body?.domainId || !body?.title || !body?.authorId) {
+  if (!body?.domainId || !body?.statement || !body?.authorId) {
     return NextResponse.json({ error: 'missing fields' }, { status: 400 });
   }
 
@@ -90,24 +135,29 @@ export async function POST(req: Request) {
       joined_at: new Date().toISOString().split('T')[0],
     }));
 
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    const id = 'q_' + Math.random().toString(36).slice(2, 12);
-    createQuestion({
-      id,
+    const normalized = normalizeQuestionDefinition({
+      statement: body.statement,
       domain_id: body.domainId,
-      subdomain_id: body.subdomainId || null,
-      title: body.title.trim(),
-      body_md: body.bodyMd?.trim() || null,
-      quality_score: 0,
-      open: 1,
-      canonical: 0,
-      source_requirements: body.sourceRequirements?.trim() || null,
+      subdomain_id: body.subdomainId,
+      question_type: body.questionType || 'exploratory',
+      difficulty: body.difficulty,
+      language: body.language,
+      visibility: body.visibility || 'draft',
+      required_source_kinds: body.requiredSourceKinds,
+      required_source_count: body.requiredSourceCount,
+      required_source_authority_min: body.requiredSourceAuthorityMin,
+      required_answer_format: body.requiredAnswerFormat,
+      forbidden_phrases: body.forbiddenPhrases,
+      min_confidence: body.minConfidence,
+      max_answer_length: body.maxAnswerLength,
+      status: 'draft',
       created_by: body.authorId,
-      created_at: now,
-      last_activity_at: now,
     });
 
-    return NextResponse.json({ id, ok: true });
+    const payload = toDbQuestionPayload(normalized);
+    createQuestion(payload);
+
+    return NextResponse.json({ id: payload.id, ok: true });
   } catch (e) {
     console.warn('[api/questions] DB unavailable:', (e as Error).message);
     return NextResponse.json({ error: 'database unavailable — question not persisted' }, { status: 503 });

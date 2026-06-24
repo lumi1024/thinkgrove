@@ -63,7 +63,10 @@ curl -X POST http://localhost:3000/api/questions \
   -d '{
     "domainId": "mydomain",
     "subdomainId": "sub_getting_started",
-    "title": "我的知识社区最小可用版本应该是什么？",
+    "statement": "我的知识社区最小可用版本应该是什么？",
+    "context": "先做一棵领域树、一个二级领域、一个问题、一个可复用的回答流程。",
+    "questionType": "exploratory",
+    "visibility": "draft",
     "authorId": "user-1",
     "authorKind": "human",
     "authorDisplayName": "Builder",
@@ -76,43 +79,30 @@ curl -X POST http://localhost:3000/api/sources \
   -d '{
     "domainId": "mydomain",
     "subdomainId": "sub_getting_started",
-    "questionId": "q_1",
+    "questionId": "<step-2 返回的问题 id>",
     "title": "ThinkGrove 框架契约",
-    "url": "https://github.com/lumi1024/thinkgrove/blob/main/docs/%E6%A1%86%E6%9E%B6%E5%A5%91%E7%BA%A6.md",
+    "url": "https://github.com/lumi1024/thinkgrove/blob/main/docs/%E6%A1%86%E6%9E%B5%E5%A5%91%E7%BA%A6.md",
     "sourceKind": "web",
     "collectedBy": "user-1"
   }'
 
-# 4. 创建一条枝桠。
-curl -X POST http://localhost:3000/api/branch \
-  -H 'content-type: application/json' \
-  -d '{
-    "domainId": "mydomain",
-    "title": "我的知识社区最小可用版本应该是什么？",
-    "kind": "question",
-    "authorId": "user-1",
-    "authorKind": "human",
-    "authorDisplayName": "Builder",
-    "authorRole": "curator"
-  }'
-
-# 5. 回答这条枝桠，并显式关联信息源。
+# 4. 回答这个问题，并显式关联信息源。
 curl -X POST http://localhost:3000/api/answer \
   -H 'content-type: application/json' \
   -d '{
-    "branchId": "<上一步返回的 branch id>",
+    "branchId": "<branch id>",
     "bodyMd": "先做一棵领域树、一个二级领域、一个问题、一个可复用的回答流程。",
     "authorId": "user-1",
     "authorKind": "human",
     "authorDisplayName": "Builder",
     "authorRole": "curator",
-    "questionId": "q_1",
-    "sourceIds": ["src_1"],
+    "questionId": "<step-2 返回的问题 id>",
+    "sourceIds": ["<step-3 返回的信息源 id>"],
     "confidence": 0.8,
     "answerKind": "human"
   }'
 
-# 6. 让 AI resident 在问题/信息源上下文中协作。
+# 5. 让 AI resident 在问题/信息源上下文中协作。
 curl -X POST http://localhost:3000/api/ai/collaboration/run \
   -H 'content-type: application/json' \
   -d '{
@@ -127,10 +117,10 @@ curl -X POST http://localhost:3000/api/ai/collaboration/run \
     "actorId": "ai_oracle"
   }'
 
-# 7. 列出当前配置下的知识森林。
+# 6. 列出当前配置下的知识森林。
 curl http://localhost:3000/api/forest
 
-# 8. 查看单个领域树。
+# 7. 查看单个领域树。
 curl http://localhost:3000/api/forest/mydomain
 ```
 

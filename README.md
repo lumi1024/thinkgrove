@@ -63,7 +63,10 @@ curl -X POST http://localhost:3000/api/questions \
   -d '{
     "domainId": "mydomain",
     "subdomainId": "sub_getting_started",
-    "title": "What is the smallest useful knowledge flow?",
+    "statement": "What is the smallest useful knowledge flow?",
+    "context": "Start from one domain, one subdomain, one question, one source, and one answer flow.",
+    "questionType": "exploratory",
+    "visibility": "draft",
     "authorId": "user-1",
     "authorKind": "human",
     "authorDisplayName": "Builder",
@@ -83,31 +86,31 @@ curl -X POST http://localhost:3000/api/sources \
     "collectedBy": "user-1"
   }'
 
-# 4. Create a branch for the question.
-curl -X POST http://localhost:3000/api/branch \
+# 4. Create a source for the question.
+curl -X POST http://localhost:3000/api/sources \
   -H 'content-type: application/json' \
   -d '{
     "domainId": "mydomain",
-    "title": "What is the smallest useful knowledge flow?",
-    "kind": "question",
-    "authorId": "user-1",
-    "authorKind": "human",
-    "authorDisplayName": "Builder",
-    "authorRole": "curator"
+    "subdomainId": "sub_getting_started",
+    "questionId": "<question-id-from-step-2>",
+    "title": "ThinkGrove Framework Contract",
+    "url": "https://github.com/lumi1024/thinkgrove/blob/main/docs/framework-contract.md",
+    "sourceKind": "web",
+    "collectedBy": "user-1"
   }'
 
-# 5. Answer that branch and reference sources.
+# 5. Answer the question with source-backed evidence.
 curl -X POST http://localhost:3000/api/answer \
   -H 'content-type: application/json' \
   -d '{
-    "branchId": "<branch-id-from-step-4>",
+    "branchId": "<branch-id>",
     "bodyMd": "Start with one domain, one subdomain, one question, one source, and one reusable answer flow.",
     "authorId": "user-1",
     "authorKind": "human",
     "authorDisplayName": "Builder",
     "authorRole": "curator",
-    "questionId": "q_1",
-    "sourceIds": ["src_1"],
+    "questionId": "<question-id-from-step-2>",
+    "sourceIds": ["<source-id-from-step-4>"],
     "confidence": 0.8,
     "answerKind": "human"
   }'
@@ -212,11 +215,10 @@ See [`docs/starter-kits.md`](./docs/starter-kits.md).
 These README examples map to existing framework routes and extension points:
 
 - `/api/subdomains` — manage second-level domain branches
-- `/api/questions` — create and list knowledge questions
+- `/api/questions` — create and list structured questions
 - `/api/sources` — collect and review raw information sources
-- `/api/branch` — create a branch
-- `/api/answer` — attach an answer to a branch
-- `/api/forest` — list domains and top branches
+- `/api/answer` — attach an answer to a question and cite sources
+- `/api/forest` — list domains and top questions
 - `/api/forest/[id]` — inspect one domain tree with questions and sources
 - `/api/ai/collaboration/run` — run question-oriented AI resident workflows with source evidence
 - `/api/external-agent/invoke` — call an external agent through the framework runtime

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 
 // GET /api/forest
-// Returns all domains + the Top 5 branches + Top 3 residents per domain.
+// Returns all domains + the Top 5 questions + Top 3 residents per domain.
 // On any DB failure (e.g. dev without MySQL), falls back to the offline
 // JSON seed at `data/forest.offline.json` so the page still renders.
 
 import { NextResponse } from 'next/server';
 import { ensureInit } from '@/lib/db/init';
-import { listDomains, listBranchesByDomain, listArticlesByDomain, listAllBranches, listAllArticles } from '@/lib/db/repos';
+import { listDomains, listArticlesByDomain, listAllArticles, listQuestionsByDomain } from '@/lib/db/repos';
 import { aiResidents, humanResidents } from '@/lib/residents';
 import { topics } from '@/lib/topics';
 import offline from '@/data/forest.offline.json';
@@ -18,16 +18,9 @@ export async function GET() {
   try {
     ensureInit();
     const dbDomains = listDomains();
-    const allBranches = listAllBranches();
     const allArticles = listAllArticles();
 
-    const branchesByDomain = new Map<string, typeof allBranches>();
     const articlesByDomain = new Map<string, typeof allArticles>();
-    for (const b of allBranches) {
-      const arr = branchesByDomain.get(b.domain_id) || [];
-      arr.push(b);
-      branchesByDomain.set(b.domain_id, arr);
-    }
     for (const a of allArticles) {
       const arr = articlesByDomain.get(a.domain_id) || [];
       arr.push(a);
@@ -35,13 +28,17 @@ export async function GET() {
     }
 
     const result = dbDomains.map((d) => {
-        const domainBranches = branchesByDomain.get(d.id) || [];
         const domainArticles = articlesByDomain.get(d.id) || [];
-        const realBranches = domainBranches.slice(0, 5);
-        const branchTitles = realBranches.length > 0
-          ? realBranches.map((b) => {
-                const author = authorName(b.created_by);
-                return { id: b.id, title: b.title, authorName: author?.name, authorKind: author?.kind };
+        const domainQuestions = listQuestionsByDomain(d.id, 5);
+        const questionSummaries = domainQuestions.length > 0
+          ? domainQuestions.map((question) => {
+                const author = authorName(question.created_by);
+                return {
+                  id: question.id,
+                  title: question.title,
+                  authorName: author?.name,
+                  authorKind: author?.kind,
+                };
               })
           : (topics[d.name] || []).slice(0, 5).map((t, i) => ({
               id: `${d.id}_seed_${i}`,
@@ -54,7 +51,7 @@ export async function GET() {
           description: d.description,
           x: d.x_pct,
           y: d.y_pct,
-          branches: branchTitles,
+          questions: questionSummaries,
           articles: domainArticles.slice(0, 3).map((a) => ({ id: a.id, title: a.title, authorId: a.author_id })),
           residents: topResidentsFor(d.id),
         };
@@ -68,7 +65,7 @@ export async function GET() {
 
 function buildOfflineResult() {
   return offline.domains.map((d) => {
-    const branches = offline.branches
+    const questionSummaries = offline.branches
       .filter((b) => b.domainId === d.id)
       .slice(0, 5)
       .map((b) => ({
@@ -84,7 +81,10 @@ function buildOfflineResult() {
       description: d.description,
       x: d.x,
       y: d.y,
-      branches,
+      questions: questionSummaries.length > 0 ? questionSummaries : (topics[d.name] || []).slice(0, 5).map((t, i) => ({
+        id: `${d.id}_seed_${i}`,
+        title: t,
+      })),
       articles: [],
       residents: topResidentsFor(d.id),
     };
@@ -108,5 +108,7 @@ function topResidentsFor(domainId: string) {
     kind: r.kind,
     role: r.role,
     state: r.state,
+    model: r.model,
+    provider: r.provider,
   }));
 }
