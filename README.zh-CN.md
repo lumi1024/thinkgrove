@@ -1,6 +1,6 @@
 # ThinkGrove
 
-ThinkGrove 是一个用于构建“问题导向知识生态”的开源框架：让人类和 AI 在领域树、问题、信息源、回答、引用、争议与治理的稳定原语上共同生长知识，而不是交付一套固定的社区产品。
+ThinkGrove 是一个用于构建“问题导向知识生态”的开源框架：让人类和 AI 在领域树、问题、回答、引用、争议与治理这些稳定结构原语上，以信息源作为一等证据对象共同生长知识，而不是交付一套固定的社区产品。
 
 本仓库按 **框架优先** 维护：保留核心 runtime、API 契约、数据库迁移、框架文档、starter-kit 和中性默认皮肤。产品首页、onboarding、营销页和品牌叙事应放在独立仓库。
 
@@ -13,10 +13,10 @@ npm run dev
 
 ## 核心思路
 
-- **问题导向的知识树** — 框架把 `Question` 当成知识树的主节点，而不是把枝桠降级成 branch 标题。标准形态是 `Domain -> Subdomain -> Question -> Source/Answer -> Citation/Dispute`。
+- **问题导向的知识树** — 框架把 `Question` 当成知识树的主节点，而不是把枝桠降级成 branch 标题。标准形态是 `Domain -> Subdomain -> Question -> Branch/Answer`，`Source` 作为证据对象附着在问题或回答上下文中。
 - **结构化问题定义** — 问题不只是 `title + body_md`，而会逐步支持来源约束、回答格式、质量分项、生命周期状态和治理规则，让下游项目直接复用问题管理能力。
-- **信息源作为一等原语** — 收集型 Agent 可以把 `Source` 入库，回答可以显式引用来源，争议可以直接落到来源可信度上。
-- **AI resident 协作** — `collector`、`oracle`、`synthesizer`、`critic`、`tutor`、`arbitrator` 围绕问题定义、来源质量、回答证据和争议治理协作。
+- **信息源作为一等证据对象** — 收集型 Agent 可以把 `Source` 入库，回答可以显式引用来源，争议可以直接落到来源可信度上。
+- **AI resident 协作** — `collector`、`oracle`、`synthesizer`、`critic`、`tutor`、`arbitrator` 围绕问题定义、来源证据、回答质量和争议治理协作。
 - **框架与产品边界清晰** — 本仓库负责 runtime、契约、文档和 starter-kit；产品负责首页、onboarding、品牌和运营话术。
 
 ## 产品接入建议
@@ -149,7 +149,7 @@ ThinkGrove 正在把问题定义收敛为可复用、可校验、可治理的框
 - 生命周期状态，例如 `draft`、`validating`、`open`、`frozen`、`merged`、`archived`
 - 审计信息，例如创建人、最近活跃时间、 curation rule
 
-这样做的目的是让问题定义可以跨 tree、collaboration、source collection、dispute governance 复用。
+这样做的目的是让问题定义可以跨 tree、collaboration、source-backed evidence 和 dispute governance 复用。
 
 ## Starter Kits
 
@@ -172,7 +172,7 @@ ThinkGrove 正在把问题定义收敛为可复用、可校验、可治理的框
 - `/api/answer` — 为枝桠添加回答
 - `/api/forest` — 列出领域和热门枝桠
 - `/api/forest/[id]` — 查看单个领域树及问题、信息源
-- `/api/ai/collaboration/run` — 运行问题/信息源导向的 AI resident 协作
+- `/api/ai/collaboration/run` — 运行问题导向的 AI resident 协作，并把信息源作为证据输入
 - `/api/external-agent/invoke` — 通过框架 runtime 调用外部 Agent
 - `data/domains.yaml` — 增加或替换领域定义
 - `data/agents.yaml` — 增加或替换居民定义

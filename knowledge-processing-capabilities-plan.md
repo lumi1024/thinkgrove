@@ -22,14 +22,14 @@
 
 ## 核心价值再压缩
 
-- 对内一句话：`ThinkGrove` 的核心价值是**一套可复用的“知识生态 runtime”**，让下游项目不用从零搭 wiki、论坛或聊天机器人，而是直接基于 `Domain / Subdomain / Question / Source / Answer / Dispute / Vote / Citation / Reputation` 这些稳定原语，构建人机共创、可争议、可治理、可换领域和 AI 后端的知识社区。
+- 对内一句话：`ThinkGrove` 的核心价值是**一套可复用的“知识生态 runtime”**，让下游项目不用从零搭 wiki、论坛或聊天机器人，而是直接基于 `Domain / Subdomain / Question / Branch / Answer` 等树结构原语，以及 `Source / Citation / Dispute / Vote / Reputation` 这些治理与证据对象，构建人机共创、可争议、可治理、可换领域和 AI 后端的知识社区。
 - 对外一句话：`ThinkGrove` 是**给知识社区用的“操作系统级骨架”**，不是某个固定产品；它的竞争力在于把“收集、组织、争议、引用、治理、AI 协作”做成可配置、可替换、可二次定制的框架能力，而不是交付一套固定的日报、运营页或产品叙事。
 
 ## 修订后的 3 个核心能力
 
 ### 1. 知识加工 primitives 与事件契约
 - 问题：当前缺少“加工过程”的结构化表达。
-- 修订后重点不再是泛化 `knowledge-event`，而是 **Question / Source 一等原语**。
+- 修订后重点不再是泛化 `knowledge-event`，而是 **Question 一等树节点 + Source 一等证据对象**。
 - 下游项目要能基于框架表达：
   候选问题、问题澄清、底层信息源入库、回答引用、争议、采纳、归档。
 - 产品层可基于这些结构自建日报/周报，
@@ -268,12 +268,12 @@ ThinkGrove 不只是知识社区骨架，而是“问题定义 + 知识树形态
 - 根：`domain`
 - 二级分支：`subdomain` 已有模型，但 tree/graph 页面基本没作为稳定节点使用
 - 枝桠：`branch.title`，其中一部分是 question，一部分是 answer/counter/cite/rebuttal/meta/source_note
-- 信息源：`sources` 已有一等模型，但树页面没有作为标准节点暴露
+- 信息源：`sources` 已有一等模型，但它们属于证据层，不应作为知识树的标准枝桠节点暴露
 - 关系：`citations`、`disputes`、`votes` 已有，但树形展示没有形成标准边
 
 #### 2. 目标形态
 
-`Domain -> Subdomain -> Question -> Source/Answer/Citation/Dispute`
+`Domain -> Subdomain -> Question -> Branch/Answer/Citation/Dispute`，`Source` 作为证据附着层
 
 其中：
 
@@ -295,7 +295,7 @@ ThinkGrove 不只是知识社区骨架，而是“问题定义 + 知识树形态
 - 一级展示：domain
 - 二级展示：subdomain
 - 三级展示：question
-- 四级展示：source、answer、citation、dispute
+- 四级展示：branch、answer、citation、dispute；source 作为问题/回答的证据附件
 - 节点元数据：至少包含 id、kind、title、status、quality_score、created_at、last_activity_at
 - 边元数据：至少包含 relation、created_at、from_id、to_id
 - 默认排序：subdomain 按 position/code；question 按 last_activity_at/quality_score；source 按 created_at；answer 按 confidence/created_at
@@ -305,7 +305,7 @@ ThinkGrove 不只是知识社区骨架，而是“问题定义 + 知识树形态
 graph 页应从“问题概念云”收敛为“问题知识网络”：
 
 - 根节点：一个 question
-- 一层关联：subdomain、source、canonical answer
+- 一层关联：subdomain、canonical answer、source
 - 二层关联：citation、dispute、counter、rebuttal
 - 边类型：cite、dispute、rewrite、adopted
 - 可选扩展：downstream product 可继续加 agent、user、article 边，但框架默认只暴露 question-first 核心边
@@ -670,7 +670,7 @@ interface TreeResponse {
 - 不做固定树形产品皮肤
 - 不做单一产品的 onboarding
 - 不做固定运营话术
-- 不做脱离 question/source 结构的泛化知识图谱
+- 不做脱离 question-first 结构的泛化知识图谱
 - 不做日报/周报模板
 - 不把 graph 做成脱离 question 的概念云
 

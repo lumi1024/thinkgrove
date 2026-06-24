@@ -1,6 +1,6 @@
 # ThinkGrove
 
-ThinkGrove is an open-source **framework for building question-first knowledge ecosystems** where humans and AI co-create, dispute, and grow ideas together. It is designed as an operating-system-level skeleton for knowledge communities: instead of delivering a fixed wiki, forum, or chatbot product, ThinkGrove provides stable runtime primitives for `Domain -> Subdomain -> Question -> Source -> Answer -> Citation/Dispute`, plus reusable API seams, governance hooks, and AI collaboration surfaces.
+ThinkGrove is an open-source **framework for building question-first knowledge ecosystems** where humans and AI co-create, dispute, and grow ideas together. It is designed as an operating-system-level skeleton for knowledge communities: instead of delivering a fixed wiki, forum, or chatbot product, ThinkGrove provides stable tree primitives for `Domain -> Subdomain -> Question -> Branch -> Answer`, with `Source` as a first-class evidence object, plus reusable API seams, governance hooks, and AI collaboration surfaces.
 
 This repository is **framework-first**. It keeps core runtime, database migrations, API contracts, framework docs, starter kits, and neutral default skins. Product skins, onboarding flows, marketing copy, and brand-specific narratives should live in separate repositories.
 
@@ -13,9 +13,9 @@ npm run dev
 
 ## Why ThinkGrove
 
-- **Question-first knowledge tree** — the framework treats `Question` as the main node in a knowledge tree, not just a text field or branch title. A tree is expressed as `Domain -> Subdomain -> Question -> Source/Answer/Citation/Dispute`.
+- **Question-first knowledge tree** — the framework treats `Question` as the main node in a knowledge tree, not just a text field or branch title. A tree is expressed as `Domain -> Subdomain -> Question -> Branch/Answer`, with `Source` attached as evidence and `Citation/Dispute` as governance edges.
 - **Structured question definitions** — questions are first-class runtime objects. The framework is moving toward reusable question definitions with source constraints, answer formats, quality dimensions, and curation states, so downstream projects do not have to reinvent question governance.
-- **Source-oriented evidence layer** — raw information sources are first-class primitives. Collector agents can gather `sources`, answers can cite them explicitly, and disputes can target source credibility.
+- **Source-backed evidence layer** — raw information sources are first-class evidence objects. Collector agents can gather `sources`, answers can cite them explicitly, and disputes can target source credibility.
 - **Role-based AI collaboration** — residents can collaborate around question clarity, source trustworthiness, answer evidence, and dispute arbitration through a reusable orchestration surface.
 - **Framework boundaries** — this repo provides runtime and docs, not a fixed product. Downstream projects should reuse the APIs and replace the demo skin.
 
@@ -128,7 +128,7 @@ ThinkGrove's knowledge tree model is built around reusable primitives:
 - `Domain` — top-level knowledge area
 - `Subdomain` — second-level branch inside a domain
 - `Question` — main node on a knowledge branch; the primary anchor for sources, answers, and collaboration
-- `Source` —底层 information source collected by agents or humans
+- `Source` — evidence object collected by agents or humans
 - `Answer` — response attached to a branch and indexed by question
 - `Citation` — reference link between answers, branches, questions, sources, or external targets
 - `Dispute` — governance event targeting an answer or source
@@ -203,7 +203,7 @@ These README examples map to existing framework routes and extension points:
 - `/api/answer` — attach an answer to a branch
 - `/api/forest` — list domains and top branches
 - `/api/forest/[id]` — inspect one domain tree with questions and sources
-- `/api/ai/collaboration/run` — run question/source-oriented AI resident workflows
+- `/api/ai/collaboration/run` — run question-oriented AI resident workflows with source evidence
 - `/api/external-agent/invoke` — call an external agent through the framework runtime
 - `data/domains.yaml` — add or replace domain definitions
 - `data/agents.yaml` — add or replace resident definitions
