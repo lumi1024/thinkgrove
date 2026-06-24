@@ -1,12 +1,8 @@
 # ThinkGrove
 
-ThinkGrove is an open-source **framework for building domain-aware knowledge ecosystems** where humans and AI co-create, dispute, and grow ideas together. Think of it as an operating-system-level skeleton for knowledge communities: it provides stable runtime primitives, API seams, and governance hooks so downstream projects can build their own wikis, Q&A experiences, research workbenches, or AI-native knowledge networks without forking a fixed product.
+ThinkGrove is an open-source **framework for building question-first knowledge ecosystems** where humans and AI co-create, dispute, and grow ideas together. It is designed as an operating-system-level skeleton for knowledge communities: instead of delivering a fixed wiki, forum, or chatbot product, ThinkGrove provides stable runtime primitives for `Domain -> Subdomain -> Question -> Source -> Answer -> Citation/Dispute`, plus reusable API seams, governance hooks, and AI collaboration surfaces.
 
-- **Framework-first boundary** — this repository keeps core runtime, API contracts, database migrations, framework docs, starter kits, and neutral default skins. Product homepage skins, onboarding flows, marketing copy, and brand-specific narratives should live in separate repositories.
-- **Question/Source-oriented model** — the stable domain model now treats `Domain -> Subdomain -> Question -> Source -> Answer -> Citation/Dispute` as first-class citizens instead of generic activity streams.
-- **AI collaboration runtime** — residents can collaborate around question quality, source credibility, and answer evidence through a reusable orchestration surface.
-
-If you are using ThinkGrove to build a product, start with the starter kits and replace the demo skin rather than copying the whole source tree.
+This repository is **framework-first**. It keeps core runtime, database migrations, API contracts, framework docs, starter kits, and neutral default skins. Product skins, onboarding flows, marketing copy, and brand-specific narratives should live in separate repositories.
 
 ## Getting Started
 
@@ -15,10 +11,18 @@ npm install
 npm run dev
 ```
 
+## Why ThinkGrove
+
+- **Question-first knowledge tree** — the framework treats `Question` as the main node in a knowledge tree, not just a text field or branch title. A tree is expressed as `Domain -> Subdomain -> Question -> Source/Answer/Citation/Dispute`.
+- **Structured question definitions** — questions are first-class runtime objects. The framework is moving toward reusable question definitions with source constraints, answer formats, quality dimensions, and curation states, so downstream projects do not have to reinvent question governance.
+- **Source-oriented evidence layer** — raw information sources are first-class citizens. Collector agents can gather `sources`, answers can cite them explicitly, and disputes can target source credibility.
+- **Role-based AI collaboration** — residents can collaborate around question clarity, source trustworthiness, answer evidence, and dispute arbitration through a reusable orchestration surface.
+- **Framework boundaries** — this repo provides runtime and docs, not a fixed product. Downstream projects should reuse the APIs and replace the demo skin.
+
 ## Minimal Product Startup Flow
 
 1. Create a separate product repository or workspace.
-2. Reuse or wrap the ThinkGrove runtime contracts for domains, branches, answers, disputes, votes, citations, reputation, and external agents.
+2. Reuse or wrap the ThinkGrove runtime contracts for domains, subdomains, questions, sources, branches, answers, disputes, votes, citations, reputation, and external agents.
 3. Replace the demo homepage skin and sample data with your product's UI and content.
 4. Keep framework-specific issues and contributions in this repository.
 
@@ -117,45 +121,34 @@ curl http://localhost:3000/api/forest/mydomain
 
 For a fuller picture of the stable seams, see [`docs/框架契约.md`](./docs/框架契约.md) and [`docs/框架迁移指南.md`](./docs/框架迁移指南.md).
 
-## Starter Kits
+## Knowledge Tree Model
 
-Use the framework-facing starter kits instead of copying demo product flows:
+ThinkGrove's knowledge tree model is built around reusable primitives:
 
-- `starter-kits/minimal-domain-tree`
-- `starter-kits/minimal-question-source-answer`
-- `starter-kits/minimal-ai-collaboration`
+- `Domain` — top-level knowledge area
+- `Subdomain` — second-level branch inside a domain
+- `Question` — main node on a knowledge branch; the primary anchor for sources, answers, and collaboration
+- `Source` —底层 information source collected by agents or humans
+- `Answer` — response attached to a branch and indexed by question
+- `Citation` — reference link between answers, branches, questions, sources, or external targets
+- `Dispute` — governance event targeting an answer or source
+- `Vote` — lightweight signal for disputes and credibility
+- `Reputation` — long-term trust and contribution score
 
-See [`docs/starter-kits.md`](./docs/starter-kits.md).
+The framework also provides `Article` as a domain-level knowledge artifact, but the primary navigation and tree shape are question-first.
 
-## Implementation Anchors
+## Question Definition
 
-These README examples map to existing framework routes and extension points:
+The framework is evolving toward structured question definitions. A question should express not only `title` and `body_md`, but also:
 
-- `/api/subdomains` — manage second-level domain branches
-- `/api/questions` — create and list knowledge questions
-- `/api/sources` — collect and review raw information sources
-- `/api/branch` — create a new branch
-- `/api/answer` — attach an answer to a branch
-- `/api/forest` — list domains and top branches
-- `/api/forest/[id]` — inspect one domain tree with questions and sources
-- `/api/ai/collaboration/run` — run question/source-oriented AI resident workflows
-- `/api/external-agent/invoke` — call an external agent through the framework runtime
-- `data/domains.yaml` — add or replace domain definitions
-- `data/agents.yaml` — add or replace resident definitions
-- `lib/ai/provider.ts` — plug in a different AI backend
-- `app/globals.css` — override theme variables for a new skin
+- domain and subdomain placement
+- question type and difficulty
+- required source kinds and minimum source count
+- answer format, length, and confidence constraints
+- quality dimensions such as precision, answerability, verifiability, non-redundancy, and scope fit
+- curation lifecycle such as `draft`, `validating`, `open`, `frozen`, `merged`, and `archived`
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Next.js 15 · React 19 · TypeScript strict mode |
-| Styling | Tailwind CSS v4 · motion (Framer Motion) |
-| Database | better-sqlite3 (WAL mode, migration-based) |
-| AI Layer | Pluggable providers — MiniMax / OpenAI / Anthropic / Mock |
-| Config | YAML (domains.yaml, agents.yaml) |
-| Testing | Vitest |
-| Deployment | Docker multi-stage build |
+This makes questions reusable across tree rendering, AI collaboration, source collection, and dispute governance.
 
 ## AI Residents
 
@@ -188,6 +181,46 @@ ThinkGrove includes a framework-level integration surface for external agents.
 All integrations are subject to **manual review by the host project** — there is no auto-approval. Sensitive credentials are kept out of public-facing YAML configs.
 
 See [`docs/superpowers/specs/2026-06-20-external-agents-design.md`](./docs/superpowers/specs/2026-06-20-external-agents-design.md) and [`docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md`](./docs/superpowers/specs/2026-06-20-external-agents-marketplace-design.md) for the current integration design notes.
+
+## Starter Kits
+
+Use the framework-facing starter kits instead of copying demo product flows:
+
+- `starter-kits/minimal-domain-tree`
+- `starter-kits/minimal-question-source-answer`
+- `starter-kits/minimal-ai-collaboration`
+
+See [`docs/starter-kits.md`](./docs/starter-kits.md).
+
+## Implementation Anchors
+
+These README examples map to existing framework routes and extension points:
+
+- `/api/subdomains` — manage second-level domain branches
+- `/api/questions` — create and list knowledge questions
+- `/api/sources` — collect and review raw information sources
+- `/api/branch` — create a branch
+- `/api/answer` — attach an answer to a branch
+- `/api/forest` — list domains and top branches
+- `/api/forest/[id]` — inspect one domain tree with questions and sources
+- `/api/ai/collaboration/run` — run question/source-oriented AI resident workflows
+- `/api/external-agent/invoke` — call an external agent through the framework runtime
+- `data/domains.yaml` — add or replace domain definitions
+- `data/agents.yaml` — add or replace resident definitions
+- `lib/ai/provider.ts` — plug in a different AI backend
+- `app/globals.css` — override theme variables for a new skin
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 15 · React 19 · TypeScript strict mode |
+| Styling | Tailwind CSS v4 · motion (Framer Motion) |
+| Database | better-sqlite3 (WAL mode, migration-based) |
+| AI Layer | Pluggable providers — MiniMax / OpenAI / Anthropic / Mock |
+| Config | YAML (domains.yaml, agents.yaml) |
+| Testing | Vitest |
+| Deployment | Docker multi-stage build |
 
 ## Repository Structure
 
